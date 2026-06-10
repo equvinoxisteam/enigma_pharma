@@ -1,0 +1,14 @@
+{
+  "name": "enigma-platform",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Enigma B2B manufacturing procurement platform",
+  "scripts": {
+    "start": "cd project/server && node server.js",
+    "build": "cd project/server && npm install",
+    "postinstall": "cd project/server && npm install"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { rfqAPI } from '../api/rfqAPI';
-import { FileText, TrendingUp, CheckCircle, Clock, DollarSign, Star } from 'lucide-react';
+import { analyticsAPI } from '../api/analyticsAPI';
+import SimpleBarChart from '../components/SimpleBarChart';
+import { FileText, TrendingUp, CheckCircle, Clock, DollarSign, Star, Package } from 'lucide-react';
 
 const AnalyticsPage = () => {
   const { user } = useAuth();
+  const isBuyer = user?.userType === 'BUYER';
   const [kpis, setKpis] = useState({
     requestsReceived: 0,
     rfqsAccepted: 0,
     winRate: 0,
     revenueWon: 0,
     avgLeadTime: 0,
-    avgRating: 0
+    avgRating: 0,
+    activeRFQs: 0,
+    inProduction: 0
   });
+  const [byTechnology, setByTechnology] = useState([]);
+  const [byRegion, setByRegion] = useState([]);
+  const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
 
@@ -23,39 +30,12 @@ const AnalyticsPage = () => {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      // Get all RFQs for analytics
-      const [myRFQs, accepted] = await Promise.all([
-        rfqAPI.getMyRFQs(),
-        rfqAPI.getAcceptedRFQs()
-      ]);
-
-      const allRFQs = myRFQs.data || [];
-      const acceptedRFQs = accepted.data || [];
-
-      // Calculate KPIs
-      const requestsReceived = allRFQs.filter(r => 
-        r.status === 'REQUESTS_PENDING' || r.status === 'OPEN_FOR_REQUESTS'
-      ).length;
-
-      const rfqsAccepted = acceptedRFQs.length;
-      const winRate = allRFQs.length > 0 
-        ? (rfqsAccepted / allRFQs.length) * 100 
-        : 0;
-
-      // Calculate average lead time (placeholder - would need actual data)
-      const avgLeadTime = 0;
-
-      // Calculate average rating (placeholder - would need rating data)
-      const avgRating = 0;
-
-      setKpis({
-        requestsReceived,
-        rfqsAccepted,
-        winRate: Math.round(winRate),
-        revenueWon: 0, // Would need actual revenue data
-        avgLeadTime,
-        avgRating
-      });
+      const response = await analyticsAPI.get(dateRange);
+      const data = response.data || {};
+      setKpis(data.kpis || {});
+      setByTechnology(data.byTechnology || []);
+      setByRegion(data.byRegion || []);
+      setTimeline(data.timeline || []);
     } catch (error) {
       console.error('Failed to load analytics:', error);
     } finally {
@@ -68,7 +48,9 @@ const AnalyticsPage = () => {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
-          <p className="text-gray-600">Track your performance and insights</p>
+          <p className="text-gray-600">
+            {isBuyer ? 'Track your RFQ publishing and sourcing performance' : 'Track your manufacturing pipeline performance'}
+          </p>
         </div>
         <select
           value={dateRange}
@@ -83,102 +65,84 @@ const AnalyticsPage = () => {
         </select>
       </div>
 
-      {/* KPI Cards */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
-              <div className="h-4 bg-gray-200 rounded mb-4"></div>
-              <div className="h-8 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded mb-4" />
+              <div className="h-8 bg-gray-200 rounded" />
             </div>
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <FileText className="text-[#4881F8]" size={32} />
-              <TrendingUp className="text-green-500" size={20} />
-            </div>
-            <div className="text-3xl font-bold mb-1">{kpis.requestsReceived}</div>
-            <div className="text-sm text-gray-600">RFQ Requests Received</div>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <CheckCircle className="text-[#4881F8]" size={32} />
-              <TrendingUp className="text-green-500" size={20} />
-            </div>
-            <div className="text-3xl font-bold mb-1">{kpis.rfqsAccepted}</div>
-            <div className="text-sm text-gray-600">RFQs Accepted (Won)</div>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <TrendingUp className="text-[#4881F8]" size={32} />
-            </div>
-            <div className="text-3xl font-bold mb-1">{kpis.winRate}%</div>
-            <div className="text-sm text-gray-600">Win Rate</div>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <DollarSign className="text-[#4881F8]" size={32} />
-            </div>
-            <div className="text-3xl font-bold mb-1">
-              ${kpis.revenueWon.toLocaleString()}
-            </div>
-            <div className="text-sm text-gray-600">Revenue Won</div>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <Clock className="text-[#4881F8]" size={32} />
-            </div>
-            <div className="text-3xl font-bold mb-1">
-              {kpis.avgLeadTime || 'N/A'}
-            </div>
-            <div className="text-sm text-gray-600">Avg Lead Time (days)</div>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <Star className="text-[#4881F8]" size={32} />
-            </div>
-            <div className="text-3xl font-bold mb-1">
-              {kpis.avgRating || 'N/A'}
-            </div>
-            <div className="text-sm text-gray-600">Average Buyer Rating</div>
-          </div>
+          {isBuyer ? (
+            <>
+              <KpiCard icon={FileText} label="Active RFQs" value={kpis.activeRFQs ?? 0} />
+              <KpiCard icon={Clock} label="Awaiting Supplier" value={kpis.requestsReceived ?? 0} />
+              <KpiCard icon={Package} label="In Production" value={kpis.inProduction ?? 0} />
+            </>
+          ) : null}
+          <KpiCard icon={FileText} label={isBuyer ? 'RFQs Published' : 'RFQ Requests Sent'} value={kpis.requestsReceived ?? 0} />
+          <KpiCard icon={CheckCircle} label={isBuyer ? 'RFQs Completed' : 'RFQs Won'} value={kpis.rfqsAccepted ?? 0} />
+          <KpiCard icon={TrendingUp} label="Success Rate" value={`${kpis.winRate ?? 0}%`} />
+          {!isBuyer && (
+            <>
+              <KpiCard icon={Clock} label="Avg Lead Time (days)" value={kpis.avgLeadTime || 'N/A'} />
+              <KpiCard icon={Star} label="Avg Buyer Rating" value={kpis.avgRating || 'N/A'} />
+            </>
+          )}
         </div>
       )}
 
-      {/* Charts Section */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">RFQs by Technology</h3>
-          <div className="h-64 flex items-center justify-center text-gray-400">
-            <p>Chart visualization coming soon</p>
-          </div>
+          <SimpleBarChart data={byTechnology} color="#4881F8" emptyText="No RFQ technology data in this period" />
         </div>
-
         <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">RFQs by Buyer Region</h3>
-          <div className="h-64 flex items-center justify-center text-gray-400">
-            <p>Chart visualization coming soon</p>
-          </div>
+          <h3 className="text-lg font-semibold mb-4">RFQs by Region</h3>
+          <SimpleBarChart data={byRegion} color="#01364a" emptyText="No regional data in this period" />
         </div>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold mb-4">Performance Over Time</h3>
-        <div className="h-64 flex items-center justify-center text-gray-400">
-          <p>Chart visualization coming soon</p>
-        </div>
+        {timeline.length > 0 ? (
+          <div className="space-y-4">
+            <div className="flex gap-6 text-xs font-medium text-gray-500">
+              <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-[#4881F8]" /> Total</span>
+              <span className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-emerald-500" /> Won / Closed</span>
+            </div>
+            <SimpleBarChart
+              data={timeline.map((t) => ({ label: t.label, value: t.requests }))}
+              color="#4881F8"
+              emptyText="No timeline data"
+            />
+            <SimpleBarChart
+              data={timeline.map((t) => ({ label: t.label, value: t.won }))}
+              color="#10b981"
+              emptyText="No wins yet"
+            />
+          </div>
+        ) : (
+          <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+            No activity in this period yet — start by {isBuyer ? 'creating an RFQ' : 'requesting from the RFQ pool'}.
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default AnalyticsPage;
+const KpiCard = ({ icon: Icon, label, value }) => (
+  <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="flex items-center justify-between mb-4">
+      <Icon className="text-[#4881F8]" size={32} />
+    </div>
+    <div className="text-3xl font-bold mb-1">{value}</div>
+    <div className="text-sm text-gray-600">{label}</div>
+  </div>
+);
 
+export default AnalyticsPage;

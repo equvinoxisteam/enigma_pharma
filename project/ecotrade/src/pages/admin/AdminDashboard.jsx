@@ -219,11 +219,12 @@ const AdminDashboardContent = ({ onTabChange }) => {
               <p className="text-xs text-gray-500 group-hover:text-white/70 mt-1">Review and upgrade accounts</p>
             </button>
             <button 
+              onClick={() => onTabChange(AdminTab.UPGRADES)}
               className="p-6 rounded-2xl bg-white/5 hover:bg-emerald-600 border border-white/5 transition-all text-left group"
             >
               <DollarSign className="mb-3 text-emerald-500 group-hover:text-white" size={28} />
-              <p className="font-bold">Payments</p>
-              <p className="text-xs text-gray-500 group-hover:text-white/70 mt-1">Manual payment logs</p>
+              <p className="font-bold">Plan Upgrades</p>
+              <p className="text-xs text-gray-500 group-hover:text-white/70 mt-1">Review payment & upgrade requests</p>
             </button>
           </div>
         </div>

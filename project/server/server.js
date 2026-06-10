@@ -156,7 +156,8 @@ app.use('/api/seller', sellerRoutes);
 // Keep upload route for file uploads
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/upload', uploadRoutes);
-app.use('/api/files', require('./routes/fileRoutes')); 
+app.use('/api/files', require('./routes/fileRoutes'));
+app.use('/api/analytics', require('./routes/analyticsRoutes')); 
 
 // Fallback to local uploads rendering
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

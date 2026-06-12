@@ -112,10 +112,10 @@ const PricingPage = () => {
   const currentPlan = user?.subscription?.planType || 'FREE';
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-16">
-        <h1 className="text-5xl font-black text-[#01364a] mb-4 tracking-tighter">Manufacturer & Hybrid Plans</h1>
-        <p className="text-xl text-gray-500 max-w-2xl mx-auto font-medium">
+    <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-10 sm:mb-16">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#01364a] mb-4 tracking-tighter">Manufacturer & Hybrid Plans</h1>
+        <p className="text-base sm:text-xl text-gray-500 max-w-2xl mx-auto font-medium">
           Hybrid accounts combine manufacturer + buyer features under one login, with the same pricing as manufacturer.
         </p>
       </div>
@@ -124,8 +124,8 @@ const PricingPage = () => {
         {plans.map((plan) => (
           <div 
             key={plan.id}
-            className={`relative flex flex-col bg-white rounded-[2.5rem] border-2 transition-all duration-300 ${
-              plan.popular ? 'border-[#4881F8] scale-105 shadow-2xl z-10' : 'border-gray-100 hover:border-gray-200'
+            className={`relative flex flex-col bg-white rounded-2xl sm:rounded-[2.5rem] border-2 transition-all duration-300 ${
+              plan.popular ? 'border-[#4881F8] lg:scale-105 shadow-2xl z-10' : 'border-gray-100 hover:border-gray-200'
             }`}
           >
             {plan.popular && (
@@ -178,10 +178,10 @@ const PricingPage = () => {
       </div>
 
       {/* Buyer Section */}
-      <div className="bg-[#01364a] rounded-[3rem] p-12 text-white overflow-hidden relative mb-20">
+      <div className="bg-[#01364a] rounded-2xl sm:rounded-[3rem] p-6 sm:p-10 lg:p-12 text-white overflow-hidden relative mb-12 sm:mb-20">
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
           <div className="lg:max-w-xl text-center lg:text-left">
-            <h2 className="text-4xl font-black mb-6 tracking-tight">Buyer Plan (Always Free)</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-6 tracking-tight">Buyer Plan (Always Free)</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 'Unlimited RFQ Publishing',
@@ -221,7 +221,7 @@ const PricingPage = () => {
       {/* Request Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-[#01364a]/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-10 shadow-2xl relative overflow-hidden">
+          <div className="bg-white rounded-2xl sm:rounded-[2.5rem] w-full max-w-lg p-6 sm:p-10 shadow-2xl relative overflow-hidden">
             <div className="relative z-10">
               <h2 className="text-3xl font-black text-[#01364a] mb-2 tracking-tight">Request Upgrade</h2>
               <p className="text-gray-500 font-bold mb-6">Plan: <span className="text-[#4881F8]">{selectedPlan?.name}</span></p>

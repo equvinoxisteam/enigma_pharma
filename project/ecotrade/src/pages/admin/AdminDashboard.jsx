@@ -137,9 +137,17 @@ const AdminDashboard = () => {
         </div>
       </aside>
 
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Main Content */}
-      <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'} ${isMobile ? 'ml-0' : ''}`}>
-        <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#06091a]/80 backdrop-blur-md sticky top-0 z-30">
+      <main className={`flex-1 transition-all duration-300 overflow-x-hidden ${sidebarOpen && !isMobile ? 'ml-64' : !isMobile ? 'ml-20' : 'ml-0'}`}>
+        <header className="h-16 sm:h-20 border-b border-white/5 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-[#06091a]/80 backdrop-blur-md sticky top-0 z-30">
           <div className="flex items-center gap-4">
             {isMobile && (
               <button onClick={() => setSidebarOpen(true)} className="p-2 text-gray-400">
@@ -160,7 +168,7 @@ const AdminDashboard = () => {
           </div>
         </header>
 
-        <div className="p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
           {renderTabContent()}
         </div>
       </main>

@@ -109,7 +109,7 @@ const LoginPage = () => {
   });
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#06091a 0%,#0d1433 50%,#0f172a 100%)', display: 'flex', fontFamily: "'Inter',sans-serif" }}>
+    <div className="min-h-screen flex flex-col lg:flex-row" style={{ background: 'linear-gradient(135deg,#06091a 0%,#0d1433 50%,#0f172a 100%)', fontFamily: "'Inter',sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         ::placeholder { color: rgba(255,255,255,0.3); }
@@ -123,8 +123,8 @@ const LoginPage = () => {
         .signin-btn:disabled { opacity:0.55; cursor:not-allowed; }
       `}</style>
 
-      {/* Left branding panel */}
-      <div className={`left-panel ${visible ? 'visible' : ''}`} style={{ flex: '1 1 45%', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', overflow: 'hidden' }}>
+      {/* Left branding panel — desktop only */}
+      <div className={`left-panel ${visible ? 'visible' : ''} hidden lg:flex lg:flex-1 relative flex-col items-center justify-center p-8 xl:p-12 overflow-hidden`}>
         <AnimatedBg />
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '380px' }}>
           <h1 className="fade-in" style={{ color: '#fff', fontSize: 'clamp(2.5rem, 4vw, 3.5rem)', fontWeight: 800, lineHeight: 1.1, marginBottom: '1.5rem', letterSpacing: '-0.03em' }}>
@@ -145,9 +145,9 @@ const LoginPage = () => {
       </div>
 
       {/* Right login panel */}
-      <div style={{ flex: '1 1 55%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 min-h-screen lg:min-h-0">
         <div className={`auth-card ${visible ? 'visible' : ''}`} style={{ width: '100%', maxWidth: '440px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: '2.75rem 2.5rem' }}>
+          <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', padding: 'clamp(1.5rem, 4vw, 2.75rem) clamp(1.25rem, 3vw, 2.5rem)' }}>
             <div className="mb-8" style={{ textAlign: 'center' }}>
               <img src="/enigma-logo.svg" alt="Enigma" style={{ height: '52px', width: 'auto', filter: 'brightness(1.1)', margin: '0 auto' }} />
             </div>
@@ -196,7 +196,7 @@ const LoginPage = () => {
               </div>
 
               {/* Remember + Forgot */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.75rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1.75rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem' }}>
                   <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)} style={{ accentColor: '#4881F8', width: '15px', height: '15px' }} />
                   Remember me

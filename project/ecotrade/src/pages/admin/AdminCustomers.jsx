@@ -88,15 +88,15 @@ const AdminCustomers = () => {
             </div>
           </div>
 
-          <div className="bg-[#010a1a] rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
-            <div className="overflow-x-auto">
+          <div className="bg-[#010a1a] rounded-2xl sm:rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
+            <div className="responsive-table-wrap">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-black/40 text-gray-500 text-[10px] font-black uppercase tracking-widest">
                   <tr>
-                    <th className="px-8 py-6">Identity & Trust</th>
-                    <th className="px-8 py-6">Engagement Role</th>
-                    <th className="px-8 py-6">Subscription</th>
-                    <th className="px-8 py-6 text-right">Administrative</th>
+                    <th className="px-4 sm:px-8 py-4 sm:py-6">Identity & Trust</th>
+                    <th className="px-4 sm:px-8 py-4 sm:py-6">Engagement Role</th>
+                    <th className="px-4 sm:px-8 py-4 sm:py-6">Subscription</th>
+                    <th className="px-4 sm:px-8 py-4 sm:py-6 text-right">Administrative</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -155,24 +155,24 @@ const AdminCustomers = () => {
           </div>
         </>
       ) : (
-        <div className="bg-[#020b1c] rounded-[3rem] border border-white/10 p-12 max-w-3xl mx-auto animate-in zoom-in-95 duration-300 shadow-2xl relative overflow-hidden">
+        <div className="bg-[#020b1c] rounded-2xl sm:rounded-[3rem] border border-white/10 p-4 sm:p-8 lg:p-12 max-w-3xl mx-auto animate-in zoom-in-95 duration-300 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none text-white">
              <ShieldCheck size={200} />
           </div>
           
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-12">
-              <div className="flex items-center gap-6">
-                <button onClick={() => setSelectedUser(null)} className="w-12 h-12 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center text-gray-400 transition-all"><ChevronLeft size={24} /></button>
-                <div>
+            <div className="flex items-center justify-between mb-8 sm:mb-12">
+              <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+                <button onClick={() => setSelectedUser(null)} className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center text-gray-400 transition-all"><ChevronLeft size={24} /></button>
+                <div className="min-w-0">
                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Administrative Override</p>
-                   <h2 className="text-4xl font-black text-white tracking-tighter">Permissions Console</h2>
+                   <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tighter">Permissions Console</h2>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-8 mb-12">
-              <div className="p-8 bg-white/5 rounded-[2rem] border border-white/10 hover:border-blue-500/30 transition-all group">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 mb-8 sm:mb-12">
+              <div className="p-5 sm:p-8 bg-white/5 rounded-2xl sm:rounded-[2rem] border border-white/10 hover:border-blue-500/30 transition-all group">
                 <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-4 flex items-center gap-2">
                    Strategic Identity <BadgeCheck size={14} className={selectedUser.manufacturerSettings?.isVerified ? 'text-blue-500' : 'text-gray-700'} />
                 </p>
@@ -188,7 +188,7 @@ const AdminCustomers = () => {
                    </button>
                 </div>
               </div>
-              <div className="p-8 bg-white/5 rounded-[2rem] border border-white/10">
+              <div className="p-5 sm:p-8 bg-white/5 rounded-2xl sm:rounded-[2rem] border border-white/10">
                 <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-4">Engagement Hub</p>
                 <p className="text-2xl font-black text-purple-400">{selectedUser.userType}</p>
                 <p className="text-[10px] text-gray-600 font-bold font-bold mt-2">ACCOUNT ID: {selectedUser._id.toString().slice(-12).toUpperCase()}</p>
@@ -198,7 +198,7 @@ const AdminCustomers = () => {
             <div className="space-y-12">
               <section>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Subscription Tier Assignment</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                   {['FREE', 'STANDARD', 'PRO', 'ENTERPRISE'].map(plan => (
                     <button 
                       key={plan}
@@ -218,7 +218,7 @@ const AdminCustomers = () => {
 
               <section>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Core Behavioral Role</p>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   {['BUYER', 'MANUFACTURER', 'HYBRID'].map(role => (
                     <button 
                       key={role}
@@ -237,7 +237,7 @@ const AdminCustomers = () => {
               </section>
             </div>
 
-            <div className="mt-16 pt-10 border-t border-white/5 flex gap-6">
+            <div className="mt-10 sm:mt-16 pt-8 sm:pt-10 border-t border-white/5 flex flex-col sm:flex-row gap-4 sm:gap-6">
               <button 
                 onClick={() => handleStatusUpdate(selectedUser._id, selectedUser.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE')}
                 className={`flex-1 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${

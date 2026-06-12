@@ -272,8 +272,8 @@ const ProfilePage = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="flex space-x-8">
+      <div className="border-b border-gray-200 mb-6 overflow-x-auto">
+        <nav className="flex space-x-4 sm:space-x-8 min-w-max sm:min-w-0">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -757,7 +757,7 @@ const ProfilePage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Max Part Dimensions (mm)
               </label>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Length</label>
                   <input

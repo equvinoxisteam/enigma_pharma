@@ -145,15 +145,15 @@ const SettingsPage = () => {
 
       <div className="bg-white border border-gray-200 rounded-lg">
         {/* Section Tabs */}
-        <div className="border-b border-gray-200">
-          <nav className="flex">
+        <div className="border-b border-gray-200 overflow-x-auto">
+          <nav className="flex min-w-max sm:min-w-0">
             {sections.map((section) => {
               const Icon = section.icon;
               return (
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`flex items-center px-6 py-4 border-b-2 font-medium text-sm ${
+                  className={`flex items-center px-4 sm:px-6 py-4 border-b-2 font-medium text-sm whitespace-nowrap ${
                     activeSection === section.id
                       ? 'border-[#4881F8] text-[#4881F8]'
                       : 'border-transparent text-gray-500 hover:text-gray-700'

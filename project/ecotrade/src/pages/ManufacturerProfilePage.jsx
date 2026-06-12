@@ -68,7 +68,7 @@ const ManufacturerProfilePage = () => {
   const showVideo = hasFeature(manufacturer, FEATURE_KEYS.VIDEO_SLIDES);
 
   return (
-    <div className="max-w-6xl mx-auto pb-20 px-4 pt-10">
+    <div className="max-w-6xl mx-auto pb-12 sm:pb-20 px-4 sm:px-6 pt-6 sm:pt-10">
       <button 
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-gray-400 hover:text-[#01364a] mb-10 transition-all font-black uppercase tracking-widest text-xs"
@@ -79,7 +79,7 @@ const ManufacturerProfilePage = () => {
 
       {/* Hero Section */}
       <div className="relative mb-12 group">
-        <div className={`h-64 rounded-[3.5rem] overflow-hidden shadow-2xl transition-all duration-700 ${!manufacturer.displayBanner ? 'bg-gradient-to-br from-[#01364a] via-[#044c66] to-[#4881F8]' : ''}`}>
+        <div className={`h-40 sm:h-56 lg:h-64 rounded-2xl sm:rounded-[3.5rem] overflow-hidden shadow-2xl transition-all duration-700 ${!manufacturer.displayBanner ? 'bg-gradient-to-br from-[#01364a] via-[#044c66] to-[#4881F8]' : ''}`}>
           {manufacturer.displayBanner ? (
             <img src={manufacturer.displayBanner} alt="Banner" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
           ) : (
@@ -89,8 +89,8 @@ const ManufacturerProfilePage = () => {
           )}
         </div>
 
-        <div className="absolute -bottom-16 left-12 flex items-end gap-8">
-           <div className="w-44 h-44 bg-white p-4 rounded-[2.5rem] shadow-2xl border border-gray-100 relative group/logo overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-8 px-2 sm:px-0 sm:absolute sm:-bottom-16 sm:left-6 lg:left-12 -mt-12 sm:mt-0">
+           <div className="w-24 h-24 sm:w-36 sm:h-36 lg:w-44 lg:h-44 mx-auto sm:mx-0 flex-shrink-0 bg-white p-3 sm:p-4 rounded-2xl sm:rounded-[2.5rem] shadow-2xl border border-gray-100 relative group/logo overflow-hidden">
              <div className="w-full h-full bg-blue-50 rounded-[2rem] flex items-center justify-center overflow-hidden">
                 {manufacturer.displayLogo ? (
                   <img src={manufacturer.displayLogo} alt="Logo" className="w-full h-full object-cover" />
@@ -107,9 +107,9 @@ const ManufacturerProfilePage = () => {
              )}
            </div>
 
-           <div className="pb-4">
-              <div className="flex items-center gap-4 mb-3">
-                <h1 className="text-5xl font-black text-[#01364a] tracking-tighter leading-none">{manufacturer.displayName}</h1>
+           <div className="pb-0 sm:pb-4 text-center sm:text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
+                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black text-[#01364a] tracking-tighter leading-tight sm:leading-none">{manufacturer.displayName}</h1>
                 {isVerified && (
                   <div className="bg-[#4881F8] text-white p-2 rounded-2xl shadow-xl shadow-blue-500/30 border-4 border-white" title="Verified Professional">
                     <Shield size={24} className="fill-current" />
@@ -121,7 +121,7 @@ const ManufacturerProfilePage = () => {
                    </span>
                 )}
               </div>
-              <div className="flex items-center gap-6 text-sm font-bold text-gray-500">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-sm font-bold text-gray-500">
                 <div className="flex items-center gap-2"><MapPin size={18} className="text-[#4881F8]" /> {manufacturer.country}</div>
                 {showCapacity && (
                   <div className={`flex items-center gap-2 px-4 py-1.5 rounded-xl border animate-pulse ${
@@ -138,10 +138,10 @@ const ManufacturerProfilePage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-24">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10 mt-8 sm:mt-20 lg:mt-24">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-10">
-          <section className="bg-white border border-gray-100 rounded-[3rem] p-10 shadow-2xl shadow-blue-900/5">
+          <section className="bg-white border border-gray-100 rounded-2xl sm:rounded-[3rem] p-5 sm:p-8 lg:p-10 shadow-2xl shadow-blue-900/5">
             <h2 className="text-2xl font-black text-[#01364a] mb-6 flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center"><ArrowRight size={20} /></div>
               Industrial Profile
@@ -164,7 +164,7 @@ const ManufacturerProfilePage = () => {
             </div>
           </section>
 
-          <section className="bg-white border border-gray-100 rounded-[3rem] p-10 shadow-2xl shadow-blue-900/5">
+          <section className="bg-white border border-gray-100 rounded-2xl sm:rounded-[3rem] p-5 sm:p-8 lg:p-10 shadow-2xl shadow-blue-900/5">
              <h2 className="text-2xl font-black text-[#01364a] mb-8">Technical Proficiency</h2>
              
              <div className="mb-8">

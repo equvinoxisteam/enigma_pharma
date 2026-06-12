@@ -360,7 +360,7 @@ const StartRFQPage = () => {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                        {['length', 'width', 'height', 'diameter'].map(dim => (
                          <div key={dim}>
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">{dim} (mm)</label>

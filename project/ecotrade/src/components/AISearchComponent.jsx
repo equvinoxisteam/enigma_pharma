@@ -91,62 +91,70 @@ const AISearchModal = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-20 px-4 bg-[#01364a]/60 backdrop-blur-md animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-start justify-center sm:pt-16 lg:pt-20 px-2 sm:px-4 bg-[#01364a]/60 backdrop-blur-md animate-in fade-in duration-300">
       <div 
         className="fixed inset-0" 
         onClick={onClose}
       />
-      <div className="w-full max-w-4xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20 flex flex-col max-h-[85vh] animate-in zoom-in duration-300 relative z-10">
+      <div className="w-full max-w-4xl bg-white rounded-t-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20 flex flex-col max-h-[92vh] sm:max-h-[85vh] animate-in zoom-in duration-300 relative z-10">
         
         {/* Tabs */}
-        <div className="flex bg-gray-50 border-b border-gray-100 p-2">
+        <div className="flex bg-gray-50 border-b border-gray-100 p-1.5 sm:p-2 gap-1">
           <button 
             onClick={() => setActiveTab('text')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black transition-all ${
               activeTab === 'text' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
-            <Sparkles size={16} /> AI Text Search
+            <Sparkles size={16} /> <span className="truncate">AI Search</span>
           </button>
           <button 
             onClick={() => fullAI ? setActiveTab('model') : null}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black transition-all ${
               activeTab === 'model' ? 'bg-white text-blue-600 shadow-sm' : fullAI ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 cursor-not-allowed'
             }`}
             title={fullAI ? 'Upload STL for model matching' : 'Upgrade to Standard+ for STL model match'}
           >
-            <Box size={16} /> Model Match (STL){!fullAI && ' 🔒'}
+            <Box size={16} /> <span className="truncate">STL Match{!fullAI && ' 🔒'}</span>
           </button>
         </div>
 
         {/* Search Header */}
-        <div className="p-8 border-b border-gray-100">
+        <div className="p-4 sm:p-6 lg:p-8 border-b border-gray-100">
           {activeTab === 'text' ? (
-            <form onSubmit={handleSearch} className="relative group">
-              <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-                {loading ? <Loader2 className="animate-spin text-[#4881F8]" size={28} /> : <Search className="text-[#4881F8]" size={28} />}
+            <form onSubmit={handleSearch} className="flex flex-col sm:block sm:relative gap-3">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-4 sm:left-6 flex items-center pointer-events-none">
+                  {loading ? <Loader2 className="animate-spin text-[#4881F8]" size={22} /> : <Search className="text-[#4881F8]" size={22} />}
+                </div>
+                <input
+                  ref={searchRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Find manufacturers by tech, material..."
+                  className="w-full pl-12 sm:pl-16 pr-4 sm:pr-36 py-4 sm:py-6 bg-gray-50 border-2 border-transparent focus:border-[#4881F8] focus:bg-white rounded-2xl sm:rounded-[1.8rem] text-base sm:text-xl lg:text-2xl outline-none transition-all font-bold tracking-tight shadow-inner"
+                />
+                <div className="hidden sm:block absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
+                   <button 
+                    type="submit"
+                    className="bg-[#01364a] hover:bg-black text-white px-4 sm:px-8 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm transition-all shadow-xl active:scale-95"
+                   >
+                     Search AI
+                   </button>
+                </div>
               </div>
-              <input
-                ref={searchRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Find manufacturers by tech, material, or location..."
-                className="w-full pl-16 pr-32 py-6 bg-gray-50 border-2 border-transparent focus:border-[#4881F8] focus:bg-white rounded-[1.8rem] text-2xl outline-none transition-all font-bold tracking-tighter shadow-inner"
-              />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                 <button 
-                  type="submit"
-                  className="bg-[#01364a] hover:bg-black text-white px-8 py-3.5 rounded-2xl font-black text-sm transition-all shadow-xl active:scale-95"
-                 >
-                   Search AI
-                 </button>
-              </div>
+              <button 
+                type="submit"
+                className="sm:hidden w-full bg-[#01364a] hover:bg-black text-white py-3.5 rounded-2xl font-black text-sm transition-all shadow-xl active:scale-95"
+              >
+                Search AI
+              </button>
             </form>
           ) : (
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="group cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#4881F8] bg-gray-50 hover:bg-blue-50/50 rounded-[2.5rem] p-12 text-center transition-all relative overflow-hidden"
+              className="group cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#4881F8] bg-gray-50 hover:bg-blue-50/50 rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-12 text-center transition-all relative overflow-hidden"
             >
               <input 
                 type="file" 
@@ -179,7 +187,7 @@ const AISearchModal = ({ onClose }) => {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gray-50/30">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar bg-gray-50/30">
           {!results && !loading && !isUploading && (
             <div className="space-y-10">
               {/* Recommendations Section */}
@@ -309,7 +317,7 @@ const AISearchModal = ({ onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-white border-t border-gray-100 flex justify-between items-center px-8">
+        <div className="p-4 sm:p-6 bg-white border-t border-gray-100 flex justify-between items-center gap-3">
            <div className="flex items-center gap-2">
              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider">Neural Engine Stable</p>

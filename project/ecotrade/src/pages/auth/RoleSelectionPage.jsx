@@ -115,7 +115,7 @@ const RoleSelectionPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #06091a 0%, #0d1433 45%, #0f172a 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen px-4 py-8 sm:px-6 sm:py-12" style={{ background: 'linear-gradient(135deg, #06091a 0%, #0d1433 45%, #0f172a 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         .role-card {
@@ -160,7 +160,7 @@ const RoleSelectionPage = () => {
         </div>
 
         {/* Role Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1rem', marginBottom: '2rem' }}>
           {roles.map((role, i) => {
             const Icon = role.icon;
             const isHovered = hoveredRole === role.id;

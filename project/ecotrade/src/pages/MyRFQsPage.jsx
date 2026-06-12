@@ -82,14 +82,14 @@ const MyRFQsPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">My RFQs</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">My RFQs</h1>
           <p className="text-gray-600">Manage your requests for quotation</p>
         </div>
         <Link
           to="/start-rfq"
-          className="px-6 py-2 bg-[#4881F8] text-white rounded-lg hover:bg-[#3b6fe0] transition-colors"
+          className="px-6 py-2 bg-[#4881F8] text-white rounded-lg hover:bg-[#3b6fe0] transition-colors text-center w-full sm:w-auto"
         >
           Create New RFQ
         </Link>
@@ -97,7 +97,7 @@ const MyRFQsPage = () => {
 
       {/* Filters */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-        <div className="grid md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           <div className="md:col-span-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -174,7 +174,7 @@ const MyRFQsPage = () => {
                 to={`/my-rfqs/${rfq._id}${location.state?.tab ? `?tab=${location.state.tab}` : ''}`}
                 className="block bg-white border border-gray-200 rounded-lg p-6 hover:border-[#4881F8] hover:shadow-md transition-all"
               >
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold text-gray-900">{rfq.title}</h3>

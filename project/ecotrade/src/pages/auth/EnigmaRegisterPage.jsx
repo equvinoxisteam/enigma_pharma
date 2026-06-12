@@ -230,7 +230,7 @@ const EnigmaRegisterPage = () => {
   const roleLabel = role === 'BUYER' ? 'Buyer' : role === 'MANUFACTURER' ? 'Manufacturer' : 'Hybrid';
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#06091a 0%,#0d1433 50%,#0f172a 100%)', fontFamily: "'Inter',sans-serif", padding: '2rem 1rem' }}>
+    <div className="min-h-screen px-4 py-6 sm:px-6 sm:py-8" style={{ background: 'linear-gradient(135deg,#06091a 0%,#0d1433 50%,#0f172a 100%)', fontFamily: "'Inter',sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         .reg-input { width:100%; padding:0.75rem 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; font-size:0.9rem; outline:none; transition:all 0.2s; box-sizing:border-box; }
@@ -273,7 +273,7 @@ const EnigmaRegisterPage = () => {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ background:'rgba(255,255,255,0.04)', backdropFilter:'blur(20px)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'20px', padding:'2.5rem 2rem' }}>
+        <form onSubmit={handleSubmit} className="p-5 sm:p-8 lg:p-10" style={{ background:'rgba(255,255,255,0.04)', backdropFilter:'blur(20px)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'20px' }}>
           {/* Step 1: Basic Information */}
           {currentStep === 1 && (
             <div className="space-y-6">
@@ -469,7 +469,7 @@ const EnigmaRegisterPage = () => {
                 
                 <div style={{ marginBottom: '1.5rem' }}>
                   <label className="reg-label">Manufacturing Types * (Select at least one)</label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {manufacturingTypesOptions.map((type) => (
                       <label key={type} style={{ display:'flex', alignItems:'center', gap:'0.5rem', cursor:'pointer', color:'rgba(255,255,255,0.7)', fontSize:'0.85rem' }}>
                         <input type="checkbox" checked={formData.manufacturingTypes.includes(type)}
@@ -501,7 +501,7 @@ const EnigmaRegisterPage = () => {
 
                 <div style={{ marginBottom: '1.5rem' }}>
                   <label className="reg-label">Primary Materials</label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {materialOptions.map((material) => (
                       <label key={material} style={{ display:'flex', alignItems:'center', gap:'0.5rem', cursor:'pointer', color:'rgba(255,255,255,0.7)', fontSize:'0.85rem' }}>
                         <input type="checkbox" checked={formData.primaryMaterials.includes(material)}
@@ -514,7 +514,7 @@ const EnigmaRegisterPage = () => {
 
                 <div style={{ marginBottom: '1.5rem' }}>
                   <label className="reg-label">Certifications</label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {certificationOptions.map((cert) => (
                       <label key={cert} style={{ display:'flex', alignItems:'center', gap:'0.5rem', cursor:'pointer', color:'rgba(255,255,255,0.7)', fontSize:'0.85rem' }}>
                         <input type="checkbox" checked={formData.certifications.includes(cert)}

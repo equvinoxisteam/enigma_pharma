@@ -132,8 +132,8 @@ const DashboardPage = () => {
     <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-3xl font-bold">Welcome back, {getUserDisplayName(user)}!</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {getUserDisplayName(user)}!</h1>
           {getRolePill()}
         </div>
         <p className="text-gray-600 font-medium opacity-80">
@@ -157,8 +157,8 @@ const DashboardPage = () => {
               </div>
               <Sparkles size={18} className="text-yellow-400" />
             </div>
-            <h2 className="text-4xl font-black text-[#01364a] mb-3 tracking-tighter leading-none">Find anything with Enigma AI</h2>
-            <p className="text-gray-500 font-bold text-lg max-w-xl">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#01364a] mb-3 tracking-tighter leading-tight sm:leading-none">Find anything with Enigma AI</h2>
+            <p className="text-gray-500 font-bold text-base sm:text-lg max-w-xl">
               Describe precisely what you need—from specialized CNC materials to custom job batches. Our AI does the extraction and discovery for you instantly.
             </p>
           </div>

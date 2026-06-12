@@ -33,7 +33,9 @@ const DashboardLayout = ({ children }) => {
   // Handle responsive behavior
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setSidebarOpen(false);
     };
     
     checkMobile();
@@ -41,6 +43,10 @@ const DashboardLayout = ({ children }) => {
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  useEffect(() => {
+    if (isMobile) setSidebarOpen(false);
+  }, [location.pathname, isMobile]);
 
   // Save sidebar state to localStorage
   useEffect(() => {
@@ -301,27 +307,28 @@ const DashboardLayout = ({ children }) => {
         style={{ height: '100vh', overflow: 'hidden' }}
       >
         {/* Top Navbar */}
-        <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6 flex-shrink-0 z-30">
+        <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-3 sm:px-4 md:px-6 flex-shrink-0 z-30 gap-2">
           <button
             onClick={toggleSidebar}
-            className="text-gray-600 hover:text-[#4881F8] transition-colors"
+            className="text-gray-600 hover:text-[#4881F8] transition-colors flex-shrink-0"
             title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
           >
-            {sidebarOpen ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
+            {isMobile ? (sidebarOpen ? <X size={24} /> : <Menu size={24} />) : (sidebarOpen ? <ChevronLeft size={24} /> : <ChevronRight size={24} />)}
           </button>
 
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('open-ai-search'))}
-            className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:border-[#4881F8] hover:text-[#4881F8] transition-colors"
+            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:border-[#4881F8] hover:text-[#4881F8] transition-colors flex-shrink-0"
             title="Search manufacturers and RFQs with AI"
           >
             <Search size={16} />
-            AI Search
+            <span className="hidden sm:inline">AI Search</span>
           </button>
 
-          <div className="flex-1" />
+          <div className="flex-1 min-w-0" />
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
             {/* Notifications */}
             <div className="relative" ref={notifRef}>
               <button 
@@ -337,7 +344,7 @@ const DashboardLayout = ({ children }) => {
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-1.5rem))] bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
                     <h3 className="font-semibold text-sm">Notifications</h3>
                     {unreadCount > 0 && (

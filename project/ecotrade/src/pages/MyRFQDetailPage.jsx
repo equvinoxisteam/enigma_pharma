@@ -3,11 +3,13 @@ import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { rfqAPI } from '../api/rfqAPI';
 import { chatAPI } from '../api/chatAPI';
 import { ratingAPI } from '../api/ratingAPI';
+import { uploadAPI } from '../api/uploadAPI';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import CADFileViewer from '../components/CADFileViewer';
 import { DetailField, RFQFilesList } from '../components/RFQDetailsPanel';
-import { ArrowLeft, FileText, Users, MessageSquare, Package, CheckCircle, X, Star, Send, Pencil, Save, Loader2 } from 'lucide-react';
+import { getFileName } from '../utils/fileUtils';
+import { ArrowLeft, FileText, Users, MessageSquare, Package, CheckCircle, X, Star, Send, Pencil, Save, Loader2, Trash2, Upload } from 'lucide-react';
 import OtherTextInput from '../components/ui/OtherTextInput';
 import { isOtherValue, resolveOtherValue, otherRequiredError } from '../utils/otherOption';
 
@@ -29,6 +31,7 @@ const MyRFQDetailPage = () => {
   const [rating, setRating] = useState({ rating: 5, comment: '' });
   const [isEditing, setIsEditing] = useState(searchParams.get('edit') === '1');
   const [saving, setSaving] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState('');
   const [editForm, setEditForm] = useState(null);
 
   const canEdit = rfq && ['DRAFT', 'OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'].includes(rfq.status);
@@ -48,6 +51,7 @@ const MyRFQDetailPage = () => {
     notes: data.notes || '',
     targetDeliveryDate: data.targetDeliveryDate ? new Date(data.targetDeliveryDate).toISOString().slice(0, 10) : '',
     requiredCertificates: data.requiredCertificates || [],
+    ndaFile: data.ndaFile || '',
     workpieces: (data.workpieces || []).map((wp) => ({
       ...wp,
       partType: partTypeOptions.includes(wp.partType) ? wp.partType : (wp.partType ? 'Other' : ''),
@@ -186,6 +190,93 @@ const MyRFQDetailPage = () => {
     });
   };
 
+  const handleRfqFileUpload = async (file, type, workpieceIndex = 0) => {
+    if (!file || !editForm) return;
+
+    const maxSize = type === 'nda' ? 10 * 1024 * 1024 : type === 'main' ? 150 * 1024 * 1024 : 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showError(`File size exceeds ${maxSize / (1024 * 1024)}MB limit`);
+      return;
+    }
+
+    const uploadKey = type === 'nda' ? 'nda' : `${type}-${workpieceIndex}`;
+    setUploadingFile(uploadKey);
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      const fileCategory = type === 'nda' ? 'document' : type === 'extra' ? 'extra' : uploadAPI.getFileTypeCategory(file);
+      uploadFormData.append('type', fileCategory);
+      const response = await uploadAPI.uploadFile(uploadFormData);
+      const fileUrl = response.data?.url || response.url;
+      if (!fileUrl) throw new Error('Upload failed');
+
+      setEditForm((prev) => {
+        if (type === 'nda') {
+          return { ...prev, ndaFile: fileUrl };
+        }
+        const workpieces = [...prev.workpieces];
+        const current = { ...workpieces[workpieceIndex] };
+        if (type === 'main') {
+          current.mainFile = fileUrl;
+        } else {
+          current.extraFiles = [...(current.extraFiles || []), fileUrl];
+        }
+        workpieces[workpieceIndex] = current;
+        return { ...prev, workpieces };
+      });
+      showSuccess('File uploaded — save changes to apply');
+    } catch (error) {
+      showError(error.response?.data?.message || 'File upload failed');
+    } finally {
+      setUploadingFile('');
+    }
+  };
+
+  const removeExtraFile = (workpieceIndex, fileIndex) => {
+    setEditForm((prev) => {
+      const workpieces = [...prev.workpieces];
+      const extraFiles = [...(workpieces[workpieceIndex].extraFiles || [])];
+      extraFiles.splice(fileIndex, 1);
+      workpieces[workpieceIndex] = { ...workpieces[workpieceIndex], extraFiles };
+      return { ...prev, workpieces };
+    });
+  };
+
+  const removeNda = () => {
+    setEditForm((prev) => ({ ...prev, ndaFile: '' }));
+  };
+
+  const removeMainFile = (workpieceIndex) => {
+    setEditForm((prev) => {
+      const workpieces = [...prev.workpieces];
+      workpieces[workpieceIndex] = { ...workpieces[workpieceIndex], mainFile: '' };
+      return { ...prev, workpieces };
+    });
+  };
+
+  const toggleCertificate = (cert) => {
+    setEditForm((prev) => {
+      const current = prev.requiredCertificates || [];
+      const next = current.includes(cert)
+        ? current.filter((c) => c !== cert)
+        : [...current, cert];
+      return { ...prev, requiredCertificates: next };
+    });
+  };
+
+  const handleDeleteRFQ = async () => {
+    if (!window.confirm('Delete this RFQ? This cannot be undone.')) return;
+    try {
+      const response = await rfqAPI.delete(id);
+      if (response.success) {
+        showSuccess('RFQ deleted');
+        navigate('/my-rfqs');
+      }
+    } catch (error) {
+      showError(error.response?.data?.message || 'Failed to delete RFQ');
+    }
+  };
+
   const handleSaveEdit = async () => {
     if (!editForm) return;
 
@@ -220,6 +311,7 @@ const MyRFQDetailPage = () => {
         notes: editForm.notes,
         targetDeliveryDate: editForm.targetDeliveryDate ? new Date(editForm.targetDeliveryDate) : undefined,
         requiredCertificates: editForm.requiredCertificates,
+        ndaFile: editForm.ndaFile || '',
         workpieces: editForm.workpieces.map((wp) => ({
           mainFile: wp.mainFile,
           extraFiles: wp.extraFiles || [],
@@ -285,13 +377,22 @@ const MyRFQDetailPage = () => {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {canEdit && !isEditing && (
-              <button
-                onClick={handleStartEdit}
-                className="flex items-center gap-2 px-4 py-2 border border-[#4881F8] text-[#4881F8] rounded-lg hover:bg-blue-50 transition-colors"
-              >
-                <Pencil size={18} />
-                Edit RFQ
-              </button>
+              <>
+                <button
+                  onClick={handleStartEdit}
+                  className="flex items-center gap-2 px-4 py-2 border border-[#4881F8] text-[#4881F8] rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  <Pencil size={18} />
+                  Edit RFQ
+                </button>
+                <button
+                  onClick={handleDeleteRFQ}
+                  className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 size={18} />
+                  Delete
+                </button>
+              </>
             )}
             {isEditing && (
               <>
@@ -491,8 +592,84 @@ const MyRFQDetailPage = () => {
                         </div>
                       ))}
                     </div>
+
+                    <div className="border-t border-gray-100 pt-4 space-y-3">
+                      <p className="text-sm font-semibold text-gray-700">Technical Model (CAD)</p>
+                      {wp.mainFile ? (
+                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                          <FileText size={16} className="text-blue-500 flex-shrink-0" />
+                          <span className="text-sm flex-1 truncate">{getFileName(wp.mainFile)}</span>
+                          <label className="text-xs text-[#4881F8] cursor-pointer hover:underline">
+                            Replace
+                            <input type="file" accept=".stl,.step,.stp,.iges,.igs,.obj,.3mf" className="hidden" onChange={(e) => { handleRfqFileUpload(e.target.files[0], 'main', index); e.target.value = ''; }} />
+                          </label>
+                          <button type="button" onClick={() => removeMainFile(index)} className="text-red-500 hover:text-red-700"><X size={16} /></button>
+                        </div>
+                      ) : (
+                        <label className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-[#4881F8] text-sm text-gray-600">
+                          {uploadingFile === `main-${index}` ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                          Upload CAD file (STL, STEP, etc.)
+                          <input type="file" accept=".stl,.step,.stp,.iges,.igs,.obj,.3mf" className="hidden" onChange={(e) => { handleRfqFileUpload(e.target.files[0], 'main', index); e.target.value = ''; }} />
+                        </label>
+                      )}
+
+                      <p className="text-sm font-semibold text-gray-700">Extra Files</p>
+                      {(wp.extraFiles || []).map((file, fi) => (
+                        <div key={fi} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                          <FileText size={14} className="text-gray-500 flex-shrink-0" />
+                          <span className="text-sm flex-1 truncate">{getFileName(file)}</span>
+                          <button type="button" onClick={() => removeExtraFile(index, fi)} className="text-red-500 hover:text-red-700"><X size={14} /></button>
+                        </div>
+                      ))}
+                      <label className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                        {uploadingFile === `extra-${index}` ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                        Add extra file
+                        <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" className="hidden" onChange={(e) => { handleRfqFileUpload(e.target.files[0], 'extra', index); e.target.value = ''; }} />
+                      </label>
+                    </div>
                   </div>
                 ))}
+
+                <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+                  <h4 className="font-semibold text-gray-800">NDA Document</h4>
+                  {editForm.ndaFile ? (
+                    <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                      <FileText size={16} className="text-blue-500 flex-shrink-0" />
+                      <span className="text-sm flex-1 truncate">{getFileName(editForm.ndaFile)}</span>
+                      <label className="text-xs text-[#4881F8] cursor-pointer hover:underline">
+                        Replace
+                        <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => { handleRfqFileUpload(e.target.files[0], 'nda'); e.target.value = ''; }} />
+                      </label>
+                      <button type="button" onClick={removeNda} className="text-red-500 hover:text-red-700"><X size={16} /></button>
+                    </div>
+                  ) : (
+                    <label className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-[#4881F8] text-sm text-gray-600">
+                      {uploadingFile === 'nda' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                      Upload NDA (PDF)
+                      <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={(e) => { handleRfqFileUpload(e.target.files[0], 'nda'); e.target.value = ''; }} />
+                    </label>
+                  )}
+                </div>
+
+                <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <h4 className="font-semibold text-gray-800">Required Certificates</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {certificationOptions.map((cert) => (
+                      <button
+                        key={cert}
+                        type="button"
+                        onClick={() => toggleCertificate(cert)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                          editForm.requiredCertificates?.includes(cert)
+                            ? 'bg-[#4881F8] border-[#4881F8] text-white'
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-[#4881F8]'
+                        }`}
+                      >
+                        {cert.replace(/_/g, ' ')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             ) : (
               <>

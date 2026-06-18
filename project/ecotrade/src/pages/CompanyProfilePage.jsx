@@ -25,6 +25,7 @@ import AuthenticatedImage from '../components/AuthenticatedImage';
 import { normalizeFileUrl } from '../utils/fileUtils';
 
 const MAX_COMPANY_IMAGES = 5;
+const MAX_COMPANY_DOC_BYTES = 5 * 1024 * 1024;
 
 const CompanyProfilePage = () => {
   const { user, updateUser } = useAuth();
@@ -79,11 +80,14 @@ const CompanyProfilePage = () => {
     load();
   }, [showError, user]);
 
-  const uploadAsset = async (file, folder) => {
+  const uploadAsset = async (file, folder, { maxBytes } = {}) => {
+    if (maxBytes && file.size > maxBytes) {
+      throw new Error(`File must be ${maxBytes / (1024 * 1024)}MB or smaller`);
+    }
     const payload = new FormData();
     payload.append('file', file);
     payload.append('folder', folder);
-    const response = await uploadAPI.uploadFile(payload);
+    const response = await uploadAPI.uploadFile(payload, undefined, { folder });
     const url = response?.data?.url || response?.url;
     if (!url) throw new Error('Upload failed');
     return url;
@@ -93,11 +97,11 @@ const CompanyProfilePage = () => {
     if (!file) return;
     setUploadingField(field);
     try {
-      const url = await uploadAsset(file, folder);
+      const url = await uploadAsset(file, folder, { maxBytes: MAX_COMPANY_DOC_BYTES });
       setFormData((prev) => ({ ...prev, [field]: url }));
       showSuccess('File uploaded — save to apply');
     } catch (error) {
-      showError(error.response?.data?.message || 'Upload failed');
+      showError(error.message || error.response?.data?.message || 'Upload failed');
     } finally {
       setUploadingField('');
     }
@@ -307,11 +311,12 @@ const CompanyProfilePage = () => {
           </section>
 
           <section className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-8 shadow-sm">
-            <h2 className="text-lg font-black text-[#01364a] mb-6">Documents & Presentations</h2>
+            <h2 className="text-lg font-black text-[#01364a] mb-2">Documents & Presentations</h2>
+            <p className="text-sm text-gray-500 mb-6">PDF and PowerPoint files only. Maximum file size: <strong>5 MB</strong> each.</p>
             <div className="space-y-5">
               <DocumentUploadRow
                 label="Company Presentation (PPT)"
-                hint="PowerPoint deck about your company"
+                hint="PowerPoint deck about your company (max 5 MB)"
                 accept=".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
                 icon={Presentation}
                 fileUrl={formData.companyPresentationUrl}
@@ -322,7 +327,7 @@ const CompanyProfilePage = () => {
               />
               <DocumentUploadRow
                 label="Company Brochure (PDF)"
-                hint="General company brochure or catalog"
+                hint="General company brochure or catalog (max 5 MB)"
                 accept=".pdf,application/pdf"
                 icon={FileText}
                 fileUrl={formData.companyBrochurePdfUrl}
@@ -333,7 +338,7 @@ const CompanyProfilePage = () => {
               />
               <DocumentUploadRow
                 label="Company Profile (PDF)"
-                hint="Detailed company profile document"
+                hint="Detailed company profile document (max 5 MB)"
                 accept=".pdf,application/pdf"
                 icon={FileText}
                 fileUrl={formData.companyProfilePdfUrl}

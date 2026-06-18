@@ -46,6 +46,7 @@ const upload = createUpload(5 * 1024 * 1024);
 const uploadLarge = createUpload(150 * 1024 * 1024);
 const uploadMedium = createUpload(50 * 1024 * 1024);
 const uploadDocument = createUpload(10 * 1024 * 1024);
+const uploadCompanyDoc = createUpload(5 * 1024 * 1024);
 
 const getObjectKey = (folder, filename) => {
   const prefix = (process.env.S3_FOLDER_PREFIX || 'enigma').replace(/^\/+|\/+$/g, '');
@@ -137,6 +138,7 @@ module.exports = {
   uploadLarge,
   uploadMedium,
   uploadDocument,
+  uploadCompanyDoc,
   uploadToS3,
   deleteFromS3,
   getPublicFileUrl,

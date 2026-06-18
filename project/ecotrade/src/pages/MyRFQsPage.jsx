@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { rfqAPI } from '../api/rfqAPI';
 import { useToast } from '../contexts/ToastContext';
-import { FileText, Search, Clock, CheckCircle, Pencil, MapPin, Globe } from 'lucide-react';
+import { FileText, Search, Clock, CheckCircle, Pencil, MapPin, Globe, Trash2 } from 'lucide-react';
 import { RFQFilesList, WorkpieceSummary } from '../components/RFQDetailsPanel';
 
 const MyRFQsPage = () => {
   const navigate = useNavigate();
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   const [rfqs, setRfqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -59,6 +59,21 @@ const MyRFQsPage = () => {
   const handleFilterChange = (field, value) => {
     setFilters(prev => ({ ...prev, [field]: value }));
     setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
+  const handleDeleteRFQ = async (rfqId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm('Delete this RFQ? This cannot be undone.')) return;
+    try {
+      const response = await rfqAPI.delete(rfqId);
+      if (response.success) {
+        showSuccess('RFQ deleted');
+        fetchRFQs();
+      }
+    } catch (error) {
+      showError(error.response?.data?.message || 'Failed to delete RFQ');
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -190,13 +205,23 @@ const MyRFQsPage = () => {
                   </Link>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {canEdit && (
-                      <Link
-                        to={`/my-rfqs/${rfq._id}?edit=1`}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#4881F8] border border-[#4881F8] rounded-lg hover:bg-blue-50 transition-colors"
-                      >
-                        <Pencil size={14} />
-                        Edit
-                      </Link>
+                      <>
+                        <Link
+                          to={`/my-rfqs/${rfq._id}?edit=1`}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#4881F8] border border-[#4881F8] rounded-lg hover:bg-blue-50 transition-colors"
+                        >
+                          <Pencil size={14} />
+                          Edit
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteRFQ(rfq._id, e)}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
+                        >
+                          <Trash2 size={14} />
+                          Delete
+                        </button>
+                      </>
                     )}
                     <Link
                       to={`/my-rfqs/${rfq._id}`}

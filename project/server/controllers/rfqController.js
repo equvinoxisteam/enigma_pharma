@@ -408,9 +408,17 @@ const updateRFQ = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    // Don't allow updates if supplier is already selected
-    if (rfq.status === 'SUPPLIER_SELECTED' || rfq.status === 'IN_PRODUCTION') {
-      return res.status(400).json({ message: 'Cannot update RFQ after supplier selection' });
+    const lockedStatuses = [
+      'SUPPLIER_SELECTED',
+      'IN_PRODUCTION',
+      'SHIPPED',
+      'DELIVERED',
+      'CLOSED',
+      'CANCELLED',
+      'EXPIRED'
+    ];
+    if (lockedStatuses.includes(rfq.status)) {
+      return res.status(400).json({ message: 'Cannot update RFQ after a manufacturer has been accepted' });
     }
 
     const updatedRFQ = await RFQ.findByIdAndUpdate(
@@ -444,9 +452,9 @@ const deleteRFQ = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    // Only allow deletion if in DRAFT status
-    if (rfq.status !== 'DRAFT') {
-      return res.status(400).json({ message: 'Can only delete RFQs in DRAFT status' });
+    const deletableStatuses = ['DRAFT', 'OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'];
+    if (!deletableStatuses.includes(rfq.status)) {
+      return res.status(400).json({ message: 'Can only delete RFQs before a manufacturer is accepted' });
     }
 
     await RFQ.findByIdAndDelete(req.params.id);

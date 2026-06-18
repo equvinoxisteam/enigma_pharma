@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { upload, uploadLarge, uploadMedium, uploadDocument, uploadToS3, getPublicFileUrl } = require('../utils/s3Upload');
+const { upload, uploadLarge, uploadMedium, uploadDocument, uploadCompanyDoc, uploadToS3, getPublicFileUrl } = require('../utils/s3Upload');
 const { protect, admin } = require('../middlewares/auth');
 
 // @desc    Upload single file (image, STL, document)
@@ -10,12 +10,15 @@ router.post('/single', protect, async (req, res) => {
   try {
     // Get file type from query or body (after multer processes it)
     const fileType = req.query.type || 'image';
+    const folder = req.query.folder;
     let uploadMiddleware;
     
     // CAD files (stl, step, stp, etc.) use large upload
     const cadTypes = ['stl', 'step', 'stp', 'iges', 'obj', 'cad', '3mf', 'dxf', 'dwg'];
     if (cadTypes.includes(fileType)) {
       uploadMiddleware = uploadLarge.single('file');
+    } else if (folder === 'company-documents') {
+      uploadMiddleware = uploadCompanyDoc.single('file');
     } else if (fileType === 'document') {
       uploadMiddleware = uploadDocument.single('file');
     } else if (fileType === 'extra') {

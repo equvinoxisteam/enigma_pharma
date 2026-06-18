@@ -66,13 +66,19 @@ export const deleteImage = async (imageUrl, token) => {
   return response.data;
 };
 
-export const uploadFile = async (formData, onUploadProgress) => {
+export const uploadFile = async (formData, onUploadProgress, options = {}) => {
   // Determine type from the actual file if not already set
   let type = formData.get('type') || 'image';
   const file = formData.get('file');
   if (file && file.name) {
     type = getFileTypeCategory(file);
     formData.set('type', type);
+  }
+
+  const folder = options.folder || formData.get('folder');
+  let requestUrl = `${API_URL}/single?type=${encodeURIComponent(type)}`;
+  if (folder) {
+    requestUrl += `&folder=${encodeURIComponent(folder)}`;
   }
   
   const config = {
@@ -87,7 +93,7 @@ export const uploadFile = async (formData, onUploadProgress) => {
     };
   }
 
-  const response = await axios.post(`${API_URL}/single?type=${type}`, formData, config);
+  const response = await axios.post(requestUrl, formData, config);
   return response.data;
 };
 

@@ -12,7 +12,7 @@
     "postbuild": "node scripts/copy-serve-config.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "serve -s dist -c dist/serve.json -l tcp://0.0.0.0:${PORT:-3000}"
+    "start": "serve -s dist -c serve.json -l tcp://0.0.0.0:${PORT:-3000}"
   },
   "dependencies": {
     "serve": "^14.2.4",

@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:prod": "vite build --mode production",
+    "build:prod": "vite build --mode production && node scripts/copy-serve-config.mjs",
     "copy:viewer-assets": "node scripts/copy-viewer-assets.mjs",
     "prebuild": "node scripts/copy-viewer-assets.mjs",
     "postbuild": "node scripts/copy-serve-config.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
+    "prestart": "node scripts/copy-serve-config.mjs",
     "start": "serve -s dist -c serve.json -l tcp://0.0.0.0:${PORT:-3000}"
   },
   "dependencies": {

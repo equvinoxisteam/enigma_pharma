@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, X, Bell, User, LogOut, Settings, HelpCircle, ChevronLeft, ChevronRight, Search, Check, Shield,
-  LayoutDashboard, UserCircle, Layers, CheckSquare, Mail, BarChart3, Users, PlusCircle, FileStack, Star, CreditCard
+  LayoutDashboard, UserCircle, Building2, Layers, CheckSquare, Mail, BarChart3, Users, PlusCircle, FileStack, Star, CreditCard
 } from 'lucide-react';
 import { getEffectivePlanType } from '../../config/planFeatures';
 import { useAuth } from '../../contexts/AuthContext';
@@ -145,7 +145,8 @@ const DashboardLayout = ({ children }) => {
 
   const commonMenuItems = [
     { label: 'My Feed', path: '/dashboard', icon: LayoutDashboard, hint: 'Dashboard overview and activity' },
-    { label: 'My Profile', path: '/profile', icon: UserCircle, hint: 'Company and account details' }
+    { label: 'My Profile', path: '/profile', icon: UserCircle, hint: 'Company and account details' },
+    { label: 'Company Profile', path: '/company-profile', icon: Building2, hint: 'Public company page, gallery and documents' }
   ];
 
   const manufacturerMenuItems = [

@@ -13,7 +13,8 @@ import {
   Package,
   Layers,
   Users,
-  Compass
+  Compass,
+  Building2
 } from "lucide-react";
 import Button from "../ui/Button";
 import AISearchComponent from "../AISearchComponent";
@@ -149,6 +150,9 @@ const Header = () => {
                       </Link>
                       <Link to="/profile" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-50">
                         <User size={18} /> My Profile
+                      </Link>
+                      <Link to="/company-profile" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-50">
+                        <Building2 size={18} /> Company Profile
                       </Link>
                       <button 
                         onClick={handleLogout}

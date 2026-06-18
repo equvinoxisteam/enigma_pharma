@@ -6,6 +6,8 @@ import { useToast } from '../contexts/ToastContext';
 import { Building2, ShoppingCart, Factory, Save } from 'lucide-react';
 import { countries } from '../data/countries';
 import AuthenticatedImage from '../components/AuthenticatedImage';
+import OtherTextInput from '../components/ui/OtherTextInput';
+import { resolveOtherInArray, resolveTechnologiesWithOther, otherArrayRequiredError } from '../utils/otherOption';
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
@@ -52,6 +54,8 @@ const ProfilePage = () => {
     },
     primaryMaterials: [],
     certifications: [],
+    otherTechnologyText: '',
+    otherCertificationText: '',
     maxDimensions: {
       height: 0,
       width: 0,
@@ -156,6 +160,8 @@ const ProfilePage = () => {
         },
         primaryMaterials: user.primaryMaterials || [],
         certifications: user.certifications || [],
+        otherTechnologyText: '',
+        otherCertificationText: '',
         maxDimensions: user.maxDimensions || { height: 0, width: 0, length: 0 }
       });
       fetchProfile();
@@ -199,10 +205,49 @@ const ProfilePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const techErr = otherArrayRequiredError(
+      formData.manufacturerSettings.technologies,
+      formData.otherTechnologyText,
+      ['OTHER'],
+      'technology'
+    );
+    if (techErr) {
+      showError(techErr);
+      return;
+    }
+    const certErr = otherArrayRequiredError(
+      formData.certifications,
+      formData.otherCertificationText,
+      ['OTHER'],
+      'certification'
+    );
+    if (certErr) {
+      showError(certErr);
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { email, ...profilePayload } = formData;
+      const resolvedTechnologies = resolveTechnologiesWithOther(
+        profilePayload.manufacturerSettings?.technologies,
+        profilePayload.otherTechnologyText
+      );
+      profilePayload.manufacturingTypes = resolvedTechnologies;
+      profilePayload.manufacturerSettings = {
+        ...profilePayload.manufacturerSettings,
+        technologies: resolvedTechnologies,
+      };
+      profilePayload.certifications = resolveOtherInArray(
+        profilePayload.certifications,
+        profilePayload.otherCertificationText,
+        ['OTHER']
+      );
+      delete profilePayload.otherTechnologyText;
+      delete profilePayload.otherCertificationText;
+
       const response = await profileAPI.update(profilePayload);
       if (response.success) {
         await updateUser(response.data);
@@ -653,6 +698,13 @@ const ProfilePage = () => {
                   </label>
                 ))}
               </div>
+              <OtherTextInput
+                show={(formData.manufacturerSettings.technologies || []).includes('OTHER')}
+                value={formData.otherTechnologyText}
+                onChange={(value) => setFormData((prev) => ({ ...prev, otherTechnologyText: value }))}
+                placeholder="Specify technology"
+                className="w-full mt-3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
+              />
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -751,6 +803,13 @@ const ProfilePage = () => {
                   </label>
                 ))}
               </div>
+              <OtherTextInput
+                show={formData.certifications.includes('OTHER')}
+                value={formData.otherCertificationText}
+                onChange={(value) => setFormData((prev) => ({ ...prev, otherCertificationText: value }))}
+                placeholder="Specify certification"
+                className="w-full mt-3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
+              />
             </div>
 
             <div>

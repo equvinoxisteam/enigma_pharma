@@ -4,6 +4,10 @@ import { ArrowLeft, Eye, EyeOff, Upload } from 'lucide-react';
 import { authAPI } from '../../api/authAPI';
 import { useToast } from '../../contexts/ToastContext';
 import { countries } from '../../data/countries';
+import OtherTextInput from '../../components/ui/OtherTextInput';
+import {
+  resolveOtherInArray,
+} from '../../utils/otherOption';
 
 const EnigmaRegisterPage = () => {
   const navigate = useNavigate();
@@ -49,6 +53,9 @@ const EnigmaRegisterPage = () => {
     maxDimensions: { height: '', width: '', length: '' },
     primaryMaterials: [],
     certifications: [],
+    otherManufacturingType: '',
+    otherMaterial: '',
+    otherCertification: '',
     
     // Buyer fields
     industryVertical: '',
@@ -169,6 +176,15 @@ const EnigmaRegisterPage = () => {
       if ((isManufacturer || isHybrid) && formData.manufacturingTypes.length === 0) {
         newErrors.manufacturingTypes = 'Select at least one manufacturing type';
       }
+      if (formData.manufacturingTypes.includes('OTHER') && !formData.otherManufacturingType.trim()) {
+        newErrors.otherManufacturingType = 'Please specify manufacturing type';
+      }
+      if (formData.primaryMaterials.includes('Others') && !formData.otherMaterial.trim()) {
+        newErrors.otherMaterial = 'Please specify material';
+      }
+      if (formData.certifications.includes('OTHER') && !formData.otherCertification.trim()) {
+        newErrors.otherCertification = 'Please specify certification';
+      }
     }
     
     setErrors(newErrors);
@@ -198,6 +214,21 @@ const EnigmaRegisterPage = () => {
         fullName: formData.fullName.trim(),
         phoneNumber: fullPhoneNumber,
         userType: role,
+        manufacturingTypes: resolveOtherInArray(
+          formData.manufacturingTypes,
+          formData.otherManufacturingType,
+          ['OTHER']
+        ),
+        primaryMaterials: resolveOtherInArray(
+          formData.primaryMaterials,
+          formData.otherMaterial,
+          ['Others']
+        ),
+        certifications: resolveOtherInArray(
+          formData.certifications,
+          formData.otherCertification,
+          ['OTHER']
+        ),
         maxDimensions: {
           height: parseFloat(formData.maxDimensions.height) || 0,
           width: parseFloat(formData.maxDimensions.width) || 0,
@@ -479,6 +510,14 @@ const EnigmaRegisterPage = () => {
                     ))}
                   </div>
                   {errors.manufacturingTypes && <p className="reg-error">{errors.manufacturingTypes}</p>}
+                  <OtherTextInput
+                    show={formData.manufacturingTypes.includes('OTHER')}
+                    value={formData.otherManufacturingType}
+                    onChange={(value) => setFormData((prev) => ({ ...prev, otherManufacturingType: value }))}
+                    placeholder="Specify manufacturing type"
+                    className="reg-input mt-3"
+                  />
+                  {errors.otherManufacturingType && <p className="reg-error">{errors.otherManufacturingType}</p>}
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4" style={{ marginBottom: '1.5rem' }}>
@@ -510,6 +549,14 @@ const EnigmaRegisterPage = () => {
                       </label>
                     ))}
                   </div>
+                  <OtherTextInput
+                    show={formData.primaryMaterials.includes('Others')}
+                    value={formData.otherMaterial}
+                    onChange={(value) => setFormData((prev) => ({ ...prev, otherMaterial: value }))}
+                    placeholder="Specify material"
+                    className="reg-input mt-3"
+                  />
+                  {errors.otherMaterial && <p className="reg-error">{errors.otherMaterial}</p>}
                 </div>
 
                 <div style={{ marginBottom: '1.5rem' }}>
@@ -523,6 +570,14 @@ const EnigmaRegisterPage = () => {
                       </label>
                     ))}
                   </div>
+                  <OtherTextInput
+                    show={formData.certifications.includes('OTHER')}
+                    value={formData.otherCertification}
+                    onChange={(value) => setFormData((prev) => ({ ...prev, otherCertification: value }))}
+                    placeholder="Specify certification"
+                    className="reg-input mt-3"
+                  />
+                  {errors.otherCertification && <p className="reg-error">{errors.otherCertification}</p>}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">

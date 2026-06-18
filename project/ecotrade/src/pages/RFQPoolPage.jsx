@@ -9,6 +9,8 @@ import { hasFeature, FEATURE_KEYS } from '../config/planFeatures';
 import Button from '../components/ui/Button';
 import CADFileViewer from '../components/CADFileViewer';
 import { getWorkpieceFileUrl } from '../utils/fileUtils';
+import OtherTextInput from '../components/ui/OtherTextInput';
+import { isOtherValue, resolveOtherValue, resolveTechnologiesWithOther } from '../utils/otherOption';
 
 const RFQPoolPage = () => {
   const navigate = useNavigate();
@@ -20,7 +22,9 @@ const RFQPoolPage = () => {
   const [filters, setFilters] = useState({
     keyword: '',
     partType: '',
+    partTypeOther: '',
     technologies: [],
+    technologyOther: '',
     country: '',
     region: '',
     certifications: [],
@@ -48,6 +52,8 @@ const RFQPoolPage = () => {
     try {
       const response = await rfqAPI.getRFQPool({
         ...filters,
+        partType: resolveOtherValue(filters.partType, filters.partTypeOther),
+        technologies: resolveTechnologiesWithOther(filters.technologies, filters.technologyOther),
         page: pagination.page,
         limit: pagination.limit
       });
@@ -77,7 +83,9 @@ const RFQPoolPage = () => {
     setFilters({
       keyword: '',
       partType: '',
+      partTypeOther: '',
       technologies: [],
+      technologyOther: '',
       country: '',
       region: '',
       certifications: [],
@@ -153,6 +161,14 @@ const RFQPoolPage = () => {
                   <option key={type} value={type}>{type}</option>
                 ))}
               </select>
+              <OtherTextInput
+                show={isOtherValue(filters.partType)}
+                value={filters.partTypeOther}
+                onChange={(value) => handleFilterChange('partTypeOther', value)}
+                placeholder="Enter part type"
+                required={false}
+                className="w-full mt-3 px-5 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold text-[#01364a] focus:border-[#4881F8] outline-none transition-all"
+              />
             </div>
             
             <div>
@@ -173,7 +189,7 @@ const RFQPoolPage = () => {
                  Manufacturing Skills
               </label>
               <div className="flex flex-wrap gap-2">
-                {technologyOptions.slice(0, 6).map(tech => (
+                {technologyOptions.map(tech => (
                   <button
                     key={tech}
                     onClick={() => handleTechnologyToggle(tech)}
@@ -183,10 +199,18 @@ const RFQPoolPage = () => {
                         : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
                     }`}
                   >
-                    {tech}
+                    {tech.replace(/_/g, ' ')}
                   </button>
                 ))}
               </div>
+              <OtherTextInput
+                show={filters.technologies.includes('OTHER')}
+                value={filters.technologyOther}
+                onChange={(value) => handleFilterChange('technologyOther', value)}
+                placeholder="Enter manufacturing technology"
+                required={false}
+                className="w-full mt-3 px-5 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl font-bold text-[#01364a] focus:border-[#4881F8] outline-none transition-all"
+              />
             </div>
           </div>
         )}

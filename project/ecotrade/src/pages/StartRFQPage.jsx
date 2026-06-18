@@ -9,6 +9,14 @@ import { getStlDimensionsFromFile } from '../utils/stlDimensions';
 import { getFileExtension } from '../utils/fileUtils';
 import { ArrowLeft, ArrowRight, Upload, X, File, FileText, Save, Box, Info, Send, Shield, Zap, Globe } from 'lucide-react';
 import Button from '../components/ui/Button';
+import OtherTextInput from '../components/ui/OtherTextInput';
+import {
+  isOtherValue,
+  resolveOtherValue,
+  resolveOtherInArray,
+  otherRequiredError,
+  otherArrayRequiredError,
+} from '../utils/otherOption';
 
 const StartRFQPage = () => {
   const navigate = useNavigate();
@@ -33,6 +41,7 @@ const StartRFQPage = () => {
       mainFileUrl: '',
       extraFiles: [],
       partType: '',
+      partTypeOther: '',
       dimensions: {
         length: 0,
         width: 0,
@@ -40,6 +49,7 @@ const StartRFQPage = () => {
         diameter: 0
       },
       technology: '',
+      technologyOther: '',
       material: '',
       quantity: 1
     }],
@@ -51,9 +61,11 @@ const StartRFQPage = () => {
     targetDeliveryDate: '',
     shippingTerms: user?.buyerSettings?.defaultIncoterms || 'FOB',
     country: user?.country || '',
+    countryOther: '',
     region: user?.buyerSettings?.defaultRegion || '',
     communicationLanguage: user?.buyerSettings?.communicationLanguage || 'English',
     requiredCertificates: [],
+    otherCertificateText: '',
     notes: '',
     ndaFile: null,
     ndaFileUrl: ''
@@ -187,6 +199,16 @@ const StartRFQPage = () => {
         showError('Please enter a material grade.');
         return;
       }
+      const partTypeErr = otherRequiredError(wp.partType, wp.partTypeOther, 'part type');
+      if (partTypeErr) {
+        showError(partTypeErr);
+        return;
+      }
+      const techErr = otherRequiredError(wp.technology, wp.technologyOther, 'manufacturing technology');
+      if (techErr) {
+        showError(techErr);
+        return;
+      }
       setActiveTab('requirements');
       return;
     }
@@ -195,8 +217,24 @@ const StartRFQPage = () => {
       showError('Please set an RFQ expiry date.');
       return;
     }
-    if (!formData.country?.trim()) {
+    const countryErr = otherRequiredError(formData.country, formData.countryOther, 'country');
+    if (countryErr) {
+      showError(countryErr);
+      return;
+    }
+    const resolvedCountry = resolveOtherValue(formData.country, formData.countryOther);
+    if (!resolvedCountry?.trim()) {
       showError('Please set a destination country in logistics.');
+      return;
+    }
+    const certErr = otherArrayRequiredError(
+      formData.requiredCertificates,
+      formData.otherCertificateText,
+      ['OTHER'],
+      'certificate'
+    );
+    if (certErr) {
+      showError(certErr);
       return;
     }
 
@@ -209,9 +247,9 @@ const StartRFQPage = () => {
         workpieces: formData.workpieces.map(wp => ({
           mainFile: wp.mainFileUrl,
           extraFiles: wp.extraFiles,
-          partType: wp.partType,
+          partType: resolveOtherValue(wp.partType, wp.partTypeOther),
           dimensions: wp.dimensions,
-          technology: wp.technology,
+          technology: resolveOtherValue(wp.technology, wp.technologyOther),
           material: wp.material,
           quantity: parseInt(wp.quantity)
         })),
@@ -223,10 +261,14 @@ const StartRFQPage = () => {
           requestJustification: formData.requestJustification,
           targetDeliveryDate: formData.targetDeliveryDate ? new Date(formData.targetDeliveryDate) : undefined,
           shippingTerms: formData.shippingTerms,
-          country: formData.country,
+          country: resolvedCountry,
           region: formData.region,
           communicationLanguage: formData.communicationLanguage,
-          requiredCertificates: formData.requiredCertificates,
+          requiredCertificates: resolveOtherInArray(
+            formData.requiredCertificates,
+            formData.otherCertificateText,
+            ['OTHER']
+          ),
           notes: formData.notes
         },
         ndaFile: formData.ndaFileUrl,
@@ -393,6 +435,13 @@ const StartRFQPage = () => {
                             <option value="">Select type</option>
                             {partTypeOptions.map((p) => <option key={p} value={p}>{p}</option>)}
                           </select>
+                          <OtherTextInput
+                            show={isOtherValue(wp.partType)}
+                            value={wp.partTypeOther}
+                            onChange={(value) => handleWorkpieceChange(index, 'partTypeOther', value)}
+                            placeholder="Enter part type"
+                            className="w-full mt-3 px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-400 rounded-2xl font-black outline-none"
+                          />
                        </div>
                        <div>
                           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Quantity</label>
@@ -429,6 +478,13 @@ const StartRFQPage = () => {
                              <option value="">Select Protocol</option>
                              {technologyOptions.map(t => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}
                           </select>
+                          <OtherTextInput
+                            show={isOtherValue(wp.technology)}
+                            value={wp.technologyOther}
+                            onChange={(value) => handleWorkpieceChange(index, 'technologyOther', value)}
+                            placeholder="Enter manufacturing technology"
+                            className="w-full mt-3 px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-400 rounded-2xl font-black outline-none"
+                          />
                        </div>
                        <div>
                           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Material Grade</label>
@@ -486,6 +542,13 @@ const StartRFQPage = () => {
                           <option value="">Select country</option>
                           {countryOptions.map((c) => <option key={c} value={c}>{c}</option>)}
                         </select>
+                        <OtherTextInput
+                          show={isOtherValue(formData.country)}
+                          value={formData.countryOther}
+                          onChange={(value) => setFormData((prev) => ({ ...prev, countryOther: value }))}
+                          placeholder="Enter country"
+                          className="w-full mt-3 px-8 py-5 bg-gray-50 border-2 border-transparent focus:border-blue-400 rounded-2xl font-black outline-none"
+                        />
                     </div>
                     <div>
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Region</label>
@@ -627,6 +690,13 @@ const StartRFQPage = () => {
                          </button>
                        ))}
                     </div>
+                    <OtherTextInput
+                      show={formData.requiredCertificates.includes('OTHER')}
+                      value={formData.otherCertificateText}
+                      onChange={(value) => setFormData((prev) => ({ ...prev, otherCertificateText: value }))}
+                      placeholder="Enter certificate name"
+                      className="w-full mt-4 px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-400 rounded-2xl font-black outline-none"
+                    />
                  </div>
               </div>
             )}

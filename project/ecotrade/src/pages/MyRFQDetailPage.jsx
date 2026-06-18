@@ -8,6 +8,11 @@ import { useAuth } from '../contexts/AuthContext';
 import CADFileViewer from '../components/CADFileViewer';
 import { DetailField, RFQFilesList } from '../components/RFQDetailsPanel';
 import { ArrowLeft, FileText, Users, MessageSquare, Package, CheckCircle, X, Star, Send, Pencil, Save, Loader2 } from 'lucide-react';
+import OtherTextInput from '../components/ui/OtherTextInput';
+import { isOtherValue, resolveOtherValue, otherRequiredError } from '../utils/otherOption';
+
+const partTypeOptions = ['Gear', 'Pipe', 'Bracket', 'Housing', 'Shaft', 'Bearing', 'Valve', 'Connector', 'Mount', 'Cover', 'Other'];
+const technologyOptions = ['CNC', 'TURNING', 'MILLING', '3D_PRINTING', 'SHEET_METAL', 'DIE_CASTING', 'INJECTION_MOLDING', 'STAMPING', 'WELDING', 'ASSEMBLY', 'OTHER'];
 
 const MyRFQDetailPage = () => {
   const { id } = useParams();
@@ -45,6 +50,10 @@ const MyRFQDetailPage = () => {
     requiredCertificates: data.requiredCertificates || [],
     workpieces: (data.workpieces || []).map((wp) => ({
       ...wp,
+      partType: partTypeOptions.includes(wp.partType) ? wp.partType : (wp.partType ? 'Other' : ''),
+      partTypeOther: partTypeOptions.includes(wp.partType) ? '' : (wp.partType || ''),
+      technology: technologyOptions.includes(wp.technology) ? wp.technology : (wp.technology ? 'OTHER' : ''),
+      technologyOther: technologyOptions.includes(wp.technology) ? '' : (wp.technology || ''),
       dimensions: { length: 0, width: 0, height: 0, diameter: 0, ...wp.dimensions },
       quantity: wp.quantity || 1
     }))
@@ -179,6 +188,21 @@ const MyRFQDetailPage = () => {
 
   const handleSaveEdit = async () => {
     if (!editForm) return;
+
+    for (let i = 0; i < (editForm.workpieces || []).length; i += 1) {
+      const wp = editForm.workpieces[i];
+      const partTypeErr = otherRequiredError(wp.partType, wp.partTypeOther, 'part type');
+      if (partTypeErr) {
+        showError(partTypeErr);
+        return;
+      }
+      const techErr = otherRequiredError(wp.technology, wp.technologyOther, 'technology');
+      if (techErr) {
+        showError(techErr);
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const payload = {
@@ -199,9 +223,9 @@ const MyRFQDetailPage = () => {
         workpieces: editForm.workpieces.map((wp) => ({
           mainFile: wp.mainFile,
           extraFiles: wp.extraFiles || [],
-          partType: wp.partType,
+          partType: resolveOtherValue(wp.partType, wp.partTypeOther),
           dimensions: wp.dimensions,
-          technology: wp.technology,
+          technology: resolveOtherValue(wp.technology, wp.technologyOther),
           material: wp.material,
           quantity: parseInt(wp.quantity, 10) || 1
         }))
@@ -221,7 +245,6 @@ const MyRFQDetailPage = () => {
   };
 
   const certificationOptions = ['ISO_9001', 'ISO_13485', 'AS9100', 'IATF_16949', 'ROHS', 'OTHER'];
-  const technologyOptions = ['CNC', 'TURNING', 'MILLING', '3D_PRINTING', 'SHEET_METAL', 'DIE_CASTING', 'INJECTION_MOLDING', 'STAMPING', 'WELDING', 'ASSEMBLY', 'OTHER'];
   const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent text-sm';
 
   if (loading) {
@@ -431,6 +454,13 @@ const MyRFQDetailPage = () => {
                           <option value="">Select</option>
                           {technologyOptions.map((t) => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
                         </select>
+                        <OtherTextInput
+                          show={isOtherValue(wp.technology)}
+                          value={wp.technologyOther}
+                          onChange={(value) => handleWorkpieceEdit(index, 'technologyOther', value)}
+                          placeholder="Enter technology"
+                          className={`${inputClass} mt-2`}
+                        />
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500 block mb-1">Material</label>
@@ -438,7 +468,17 @@ const MyRFQDetailPage = () => {
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500 block mb-1">Part Type</label>
-                        <input className={inputClass} value={wp.partType || ''} onChange={(e) => handleWorkpieceEdit(index, 'partType', e.target.value)} />
+                        <select className={inputClass} value={wp.partType || ''} onChange={(e) => handleWorkpieceEdit(index, 'partType', e.target.value)}>
+                          <option value="">Select</option>
+                          {partTypeOptions.map((p) => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                        <OtherTextInput
+                          show={isOtherValue(wp.partType)}
+                          value={wp.partTypeOther}
+                          onChange={(value) => handleWorkpieceEdit(index, 'partTypeOther', value)}
+                          placeholder="Enter part type"
+                          className={`${inputClass} mt-2`}
+                        />
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500 block mb-1">Quantity</label>

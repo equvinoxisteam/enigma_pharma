@@ -112,7 +112,7 @@ const PricingPage = () => {
   const currentPlan = user?.subscription?.planType || 'FREE';
 
   return (
-    <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <div className="w-full py-4 sm:py-6">
       <div className="text-center mb-10 sm:mb-16">
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#01364a] mb-4 tracking-tighter">Manufacturer & Hybrid Plans</h1>
         <p className="text-base sm:text-xl text-gray-500 max-w-2xl mx-auto font-medium">

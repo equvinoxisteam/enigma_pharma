@@ -15,6 +15,8 @@ import AuthenticatedImage from '../AuthenticatedImage';
 
 const SIDEBAR_WIDTH = 240;
 const SIDEBAR_COLLAPSED = 72;
+const SIDEBAR_INSET = 12;
+const SIDEBAR_GAP = 10;
 
 const DashboardLayout = ({ children }) => {
   const location = useLocation();
@@ -217,7 +219,7 @@ const DashboardLayout = ({ children }) => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const sidebarWidth = sidebarOpen ? SIDEBAR_WIDTH : SIDEBAR_COLLAPSED;
-  const mainOffset = isMobile ? 0 : sidebarWidth + 32;
+  const mainOffset = isMobile ? 0 : SIDEBAR_INSET + sidebarWidth + SIDEBAR_GAP;
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] flex overflow-hidden" style={{ height: '100vh' }}>
@@ -230,7 +232,7 @@ const DashboardLayout = ({ children }) => {
           rounded-2xl transition-all duration-300 ease-in-out
           ${isMobile
             ? `inset-y-0 left-0 rounded-none border-l-0 border-y-0 w-64 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
-            : 'top-4 bottom-4 left-4'
+            : 'top-3 bottom-3 left-3'
           }
         `}
         style={isMobile ? { height: '100vh' } : { width: sidebarWidth }}
@@ -302,14 +304,15 @@ const DashboardLayout = ({ children }) => {
 
       {/* Main Content */}
       <div
-        className="flex-1 flex flex-col min-w-0 transition-all duration-300"
+        className="flex-1 flex flex-col min-w-0 w-full transition-all duration-300"
         style={{
           height: '100vh',
           overflow: 'hidden',
-          marginLeft: isMobile ? 0 : mainOffset
+          marginLeft: isMobile ? 0 : mainOffset,
+          paddingRight: isMobile ? 0 : SIDEBAR_INSET
         }}
       >
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/70 h-16 flex items-center justify-between px-3 sm:px-5 md:px-6 flex-shrink-0 z-30 gap-2 mx-0 md:mx-4 md:mt-4 md:rounded-2xl md:border md:shadow-sm">
+        <header className="bg-white border-b border-gray-200 h-14 sm:h-16 flex items-center justify-between px-3 sm:px-4 lg:px-5 flex-shrink-0 z-30 gap-2 sticky top-0">
           <button
             onClick={toggleSidebar}
             className={`text-gray-600 hover:text-[#4881F8] transition-colors flex-shrink-0 p-1 ${!isMobile && sidebarOpen ? 'invisible w-0 p-0 overflow-hidden' : ''}`}
@@ -452,11 +455,8 @@ const DashboardLayout = ({ children }) => {
           </div>
         </header>
 
-        <main
-          className="flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-6 pb-6 pt-4 md:pt-5 scrollbar-thin"
-          style={{ maxHeight: isMobile ? 'calc(100vh - 64px)' : 'calc(100vh - 96px)' }}
-        >
-          {children}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full min-h-0 px-3 sm:px-4 lg:px-5 py-3 sm:py-4 pb-6 scrollbar-thin">
+          <div className="w-full min-w-0">{children}</div>
         </main>
       </div>
 

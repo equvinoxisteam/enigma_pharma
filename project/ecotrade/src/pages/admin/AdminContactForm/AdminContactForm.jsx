@@ -188,7 +188,7 @@ const AdminContactForm = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 w-full">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>

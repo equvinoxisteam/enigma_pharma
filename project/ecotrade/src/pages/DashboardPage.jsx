@@ -154,7 +154,7 @@ const DashboardPage = () => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="w-full space-y-4 sm:space-y-6">
       {/* Welcome */}
       <section className="bg-white rounded-2xl border border-gray-200/80 p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -201,7 +201,7 @@ const DashboardPage = () => {
 
       {/* Stats */}
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[...Array(isBuyer && isManufacturer ? 8 : 4)].map((_, i) => (
             <div key={i} className="bg-white rounded-2xl border border-gray-200 p-5 animate-pulse h-28" />
           ))}
@@ -213,7 +213,7 @@ const DashboardPage = () => {
               <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 px-1">
                 {isManufacturer ? 'Buyer Activity' : 'Your RFQs'}
               </h2>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {buyerStats.map((stat) => (
                   <StatCard
                     key={stat.label}
@@ -232,7 +232,7 @@ const DashboardPage = () => {
               <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 px-1">
                 {isBuyer ? 'Seller Activity' : 'Your Pipeline'}
               </h2>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {manufacturerStats.map((stat) => (
                   <StatCard
                     key={stat.label}

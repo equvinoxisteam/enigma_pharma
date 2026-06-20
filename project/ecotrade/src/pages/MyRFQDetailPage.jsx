@@ -341,7 +341,7 @@ const MyRFQDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 rounded w-1/3"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
@@ -361,7 +361,7 @@ const MyRFQDetailPage = () => {
   ].filter(tab => tab.show);
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="w-full">
       <div className="mb-6">
         <button
           onClick={() => navigate('/my-rfqs')}

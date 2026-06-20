@@ -105,7 +105,7 @@ const MyManufacturersPage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="w-full">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">My Manufacturers</h1>
         <p className="text-gray-600">Manufacturers you've worked with or saved</p>

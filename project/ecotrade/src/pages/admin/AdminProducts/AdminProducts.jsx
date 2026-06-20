@@ -235,7 +235,7 @@ const AdminProducts = () => {
   
   return (
     <ErrorBoundary>
-      <div className="p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
+      <div className="p-3 sm:p-4 lg:p-6 w-full">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Products Management</h1>
           <Button

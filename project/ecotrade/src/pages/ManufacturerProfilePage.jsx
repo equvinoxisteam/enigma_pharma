@@ -58,14 +58,14 @@ const ManufacturerProfilePage = () => {
   }, [id, showError]);
 
   if (loading) return (
-    <div className="max-w-6xl mx-auto p-12 space-y-8 animate-pulse">
+    <div className="w-full p-8 sm:p-12 space-y-8 animate-pulse">
       <div className="h-64 bg-gray-100 rounded-[3rem]"></div>
       <div className="h-20 bg-gray-50 rounded-2xl w-1/2"></div>
     </div>
   );
 
   if (!manufacturer) return (
-    <div className="max-w-4xl mx-auto text-center py-20 bg-gray-50 rounded-[3rem] mt-10">
+    <div className="w-full text-center py-16 sm:py-20 bg-gray-50 rounded-2xl sm:rounded-[3rem] mt-6 sm:mt-10">
       <h2 className="text-3xl font-black text-[#01364a] mb-4">Manufacturer Not Found</h2>
       <button onClick={() => navigate(-1)} className="px-8 py-3 bg-[#4881F8] text-white rounded-2xl font-bold">Return to Pool</button>
     </div>
@@ -76,7 +76,7 @@ const ManufacturerProfilePage = () => {
   const showVideo = hasFeature(manufacturer, FEATURE_KEYS.VIDEO_SLIDES);
 
   return (
-    <div className="max-w-6xl mx-auto pb-12 sm:pb-20 px-4 sm:px-6 pt-6 sm:pt-10">
+    <div className="w-full pb-8 sm:pb-12 pt-4 sm:pt-6">
       <button 
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-gray-400 hover:text-[#01364a] mb-10 transition-all font-black uppercase tracking-widest text-xs"

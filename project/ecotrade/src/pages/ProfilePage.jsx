@@ -311,7 +311,7 @@ const ProfilePage = () => {
   const incotermsOptions = ['FOB', 'CIF', 'EXW', 'DDP', 'DAP', 'FCA'];
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">My Profile</h1>
         <p className="text-gray-600">Manage your profile settings and preferences</p>

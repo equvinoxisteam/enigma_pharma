@@ -183,7 +183,7 @@ const CompanyProfilePage = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pb-12 px-4 sm:px-6">
+    <div className="w-full pb-8 sm:pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <button

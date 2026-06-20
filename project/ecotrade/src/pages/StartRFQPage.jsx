@@ -288,7 +288,7 @@ const StartRFQPage = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4">
+    <div className="w-full py-4 sm:py-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
           <button

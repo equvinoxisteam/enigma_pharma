@@ -68,7 +68,7 @@ const AcceptedRFQsPage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="w-full">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Accepted RFQs</h1>
         <p className="text-gray-600">Manage your accepted manufacturing jobs</p>

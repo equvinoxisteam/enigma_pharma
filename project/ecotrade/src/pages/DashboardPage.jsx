@@ -1,15 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { 
-  FileText, Factory, CheckCircle, BarChart3, PlusCircle, 
-  Clock, Package, Users, TrendingUp, AlertCircle, ArrowRight,
-  Zap, Search
-} from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import AIIcon from '../components/icons/AIIcon';
 import { rfqAPI } from '../api/rfqAPI';
 import { searchAPI } from '../api/searchAPI';
 import { getUserDisplayName } from '../utils/userDisplay';
+
+const StatCard = ({ label, value, hint, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="text-left w-full bg-white rounded-2xl border border-gray-200/80 p-5 hover:border-[#4881F8] hover:shadow-md hover:shadow-blue-500/5 transition-all group"
+  >
+    <p className="text-3xl font-bold text-[#01364a] mb-1 tabular-nums">{value}</p>
+    <p className="text-sm font-semibold text-gray-800">{label}</p>
+    {hint && <p className="text-xs text-gray-500 mt-1">{hint}</p>}
+    <span className="inline-block mt-3 text-xs font-medium text-[#4881F8] opacity-0 group-hover:opacity-100 transition-opacity">
+      View details →
+    </span>
+  </button>
+);
+
+const QuickLink = ({ to, title, description }) => (
+  <Link
+    to={to}
+    className="block p-5 bg-white rounded-2xl border border-gray-200/80 hover:border-[#4881F8] hover:shadow-md transition-all"
+  >
+    <h3 className="font-semibold text-[#01364a] mb-1">{title}</h3>
+    <p className="text-sm text-gray-500">{description}</p>
+  </Link>
+);
 
 const DashboardPage = () => {
   const { user } = useAuth();
@@ -49,24 +70,20 @@ const DashboardPage = () => {
         acceptedRFQs: 0,
         inProductionJobs: 0
       };
-      
+
       if (isBuyer) {
-        // Fetch buyer KPIs
         const myRFQs = await rfqAPI.getMyRFQs();
         const rfqs = myRFQs.data || [];
-        
-        nextKpis.activeRFQs = rfqs.filter(r => !['CLOSED', 'CANCELLED', 'EXPIRED'].includes(r.status)).length;
-        nextKpis.awaitingSupplier = rfqs.filter(r => r.status === 'REQUESTS_PENDING').length;
-        nextKpis.inProduction = rfqs.filter(r => r.status === 'IN_PRODUCTION').length;
-        nextKpis.awaitingConfirmation = rfqs.filter(r => r.status === 'SHIPPED').length;
 
-        // Get RFQs with new requests
-        const rfqsWithRequests = rfqs.filter(r => r.status === 'REQUESTS_PENDING');
-        setRecentRequests(rfqsWithRequests.slice(0, 5));
+        nextKpis.activeRFQs = rfqs.filter((r) => !['CLOSED', 'CANCELLED', 'EXPIRED'].includes(r.status)).length;
+        nextKpis.awaitingSupplier = rfqs.filter((r) => r.status === 'REQUESTS_PENDING').length;
+        nextKpis.inProduction = rfqs.filter((r) => r.status === 'IN_PRODUCTION').length;
+        nextKpis.awaitingConfirmation = rfqs.filter((r) => r.status === 'SHIPPED').length;
+
+        setRecentRequests(rfqs.filter((r) => r.status === 'REQUESTS_PENDING').slice(0, 5));
       }
 
       if (isManufacturer) {
-        // Fetch manufacturer KPIs
         const [poolResult, acceptedResult, myResult] = await Promise.allSettled([
           rfqAPI.getRFQPool({ page: 1, limit: 1 }),
           rfqAPI.getAcceptedRFQs(),
@@ -76,23 +93,19 @@ const DashboardPage = () => {
         const accepted = acceptedResult.status === 'fulfilled' ? acceptedResult.value : { data: [] };
         const myRFQs = myResult.status === 'fulfilled' ? myResult.value : { data: [] };
 
-        const requestedCount = myRFQs.data?.filter(r => 
+        nextKpis.matchingRFQs = pool.pagination?.total || 0;
+        nextKpis.requestedRFQs = myRFQs.data?.filter((r) =>
           r.status === 'REQUESTS_PENDING' || r.status === 'OPEN_FOR_REQUESTS'
         ).length || 0;
-
-        nextKpis.matchingRFQs = pool.pagination?.total || 0;
-        nextKpis.requestedRFQs = requestedCount;
         nextKpis.acceptedRFQs = accepted.data?.length || 0;
-        nextKpis.inProductionJobs = accepted.data?.filter(r => r.status === 'IN_PRODUCTION').length || 0;
+        nextKpis.inProductionJobs = accepted.data?.filter((r) => r.status === 'IN_PRODUCTION').length || 0;
 
-        // Get AI Recommendations
         try {
           const matching = await searchAPI.getRecommendations();
           setNewMatchingRFQs(matching.data || []);
-        } catch (err) {
-          console.error("AI Recommendations failed:", err);
-          const pool = await rfqAPI.getRFQPool({ page: 1, limit: 5 });
-          setNewMatchingRFQs(pool.data || []);
+        } catch {
+          const poolData = await rfqAPI.getRFQPool({ page: 1, limit: 5 });
+          setNewMatchingRFQs(poolData.data || []);
         }
       }
       setKpis(nextKpis);
@@ -103,327 +116,216 @@ const DashboardPage = () => {
     }
   };
 
-  const getRolePill = () => {
-    const roleMap = {
-      'BUYER': { label: 'Buyer', color: 'bg-blue-100 text-blue-800' },
-      'MANUFACTURER': { label: 'Seller (Manufacturer)', color: 'bg-green-100 text-green-800' },
-      'HYBRID': { label: 'Hybrid (Buyer + Seller)', color: 'bg-purple-100 text-purple-800' }
-    };
-    const role = roleMap[userType] || roleMap['BUYER'];
-    return (
-      <span className={`px-3 py-1 rounded-full text-sm font-medium ${role.color}`}>
-        {role.label}
-      </span>
-    );
-  };
+  const roleLabel = {
+    BUYER: 'Buyer',
+    MANUFACTURER: 'Manufacturer',
+    HYBRID: 'Hybrid · Buyer & Seller'
+  }[userType] || 'Buyer';
+
+  const roleHint = {
+    BUYER: 'Create RFQs, discover suppliers, and track orders.',
+    MANUFACTURER: 'Browse the RFQ pool, submit bids, and manage production.',
+    HYBRID: 'Run buyer and seller workflows from one account.'
+  }[userType];
 
   const handleKPIClick = (filter) => {
-    if (isBuyer) {
+    if (isBuyer && ['active', 'REQUESTS_PENDING', 'IN_PRODUCTION', 'SHIPPED'].includes(filter)) {
       navigate('/my-rfqs', { state: { filter } });
-    } else {
-      if (filter === 'matching') {
-        navigate('/rfqs-pool');
-      } else if (filter === 'accepted') {
-        navigate('/accepted-rfqs');
-      }
+      return;
     }
+    if (filter === 'matching') navigate('/rfqs-pool');
+    else if (filter === 'accepted') navigate('/accepted-rfqs');
+    else if (filter === 'requested') navigate('/my-rfqs');
+    else if (filter === 'IN_PRODUCTION') navigate('/accepted-rfqs');
   };
 
+  const buyerStats = [
+    { label: 'Active RFQs', value: kpis.activeRFQs, hint: 'Open requests', filter: 'active' },
+    { label: 'Awaiting Supplier', value: kpis.awaitingSupplier, hint: 'Pending selection', filter: 'REQUESTS_PENDING' },
+    { label: 'In Production', value: kpis.inProduction, hint: 'Being manufactured', filter: 'IN_PRODUCTION' },
+    { label: 'Awaiting Confirmation', value: kpis.awaitingConfirmation, hint: 'Shipped, confirm delivery', filter: 'SHIPPED' }
+  ];
+
+  const manufacturerStats = [
+    { label: 'Matching RFQs', value: kpis.matchingRFQs, hint: 'In the pool', filter: 'matching' },
+    { label: 'RFQs Requested', value: kpis.requestedRFQs, hint: 'Awaiting buyer', filter: 'requested' },
+    { label: 'Accepted RFQs', value: kpis.acceptedRFQs, hint: 'Active jobs', filter: 'accepted' },
+    { label: 'In Production', value: kpis.inProductionJobs, hint: 'Current jobs', filter: 'IN_PRODUCTION' }
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-          <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {getUserDisplayName(user)}!</h1>
-          {getRolePill()}
-        </div>
-        <p className="text-gray-600 font-medium opacity-80">
-          {userType === 'BUYER' && 'Create and manage RFQs, discover suppliers, and track fulfillment from one place.'}
-          {userType === 'MANUFACTURER' && 'Find matching RFQs, submit requests, manage accepted jobs, and grow your seller pipeline.'}
-          {userType === 'HYBRID' && 'Use both buyer and seller workflows under one account, including RFQ creation and RFQ response.'}
-        </p>
-      </div>
-
-      {/* AI Search Common Section */}
-      <div 
-        onClick={() => window.dispatchEvent(new CustomEvent('open-ai-search'))}
-        className="relative group mb-10 cursor-pointer"
-      >
-        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] blur opacity-10 group-hover:opacity-25 transition duration-1000 group-hover:duration-200"></div>
-        <div className="relative bg-white border border-gray-100 rounded-[2.5rem] p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden shadow-2xl shadow-blue-900/5 hover:-translate-y-1 transition-all duration-300">
-          <div className="flex-1 text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
-              <div className="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100">
-                AI Matchmaking Active
-              </div>
-              <AIIcon size={18} className="text-[#4881F8]" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#01364a] mb-3 tracking-tighter leading-tight sm:leading-none">Find anything with Enigma AI</h2>
-            <p className="text-gray-500 font-bold text-base sm:text-lg max-w-xl">
-              Describe precisely what you need—from specialized CNC materials to custom job batches. Our AI does the extraction and discovery for you instantly.
-            </p>
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Welcome */}
+      <section className="bg-white rounded-2xl border border-gray-200/80 p-6 sm:p-8 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#4881F8] mb-2">My Feed</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#01364a] mb-2">
+              Welcome back, {getUserDisplayName(user)}
+            </h1>
+            <p className="text-gray-500 text-sm sm:text-base max-w-xl">{roleHint}</p>
           </div>
-          
-          <button 
-            className="w-full md:w-auto px-10 py-5 bg-[#01364a] text-white rounded-[1.8rem] font-black text-lg flex items-center justify-center gap-4 hover:shadow-2xl hover:shadow-blue-950/20 transition-all group border-b-4 border-blue-950 active:border-b-0 active:translate-y-1"
-          >
-            <Search size={24} className="group-hover:rotate-12 transition-transform" />
-            AI Search
-          </button>
-          
+          <span className="self-start px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide bg-[#4881F8]/10 text-[#4881F8] border border-[#4881F8]/20">
+            {roleLabel}
+          </span>
         </div>
-      </div>
+      </section>
 
-      {/* KPI Cards */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
-              <div className="h-8 bg-gray-200 rounded mb-4"></div>
-              <div className="h-6 bg-gray-200 rounded"></div>
+      {/* AI Search */}
+      <section
+        onClick={() => window.dispatchEvent(new CustomEvent('open-ai-search'))}
+        className="cursor-pointer group"
+      >
+        <div className="bg-gradient-to-br from-[#01364a] to-[#044c66] rounded-2xl p-6 sm:p-8 text-white shadow-lg shadow-blue-900/10 hover:shadow-xl transition-shadow">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <AIIcon size={16} className="text-blue-200" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-200">AI Matchmaking</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">Find manufacturers or RFQs instantly</h2>
+              <p className="text-blue-100/80 text-sm max-w-lg">
+                Describe what you need — materials, technology, quantity — and Enigma AI finds the best matches.
+              </p>
             </div>
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-[#01364a] rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors shrink-0"
+            >
+              <Search size={18} />
+              Open AI Search
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      {loading ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(isBuyer && isManufacturer ? 8 : 4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-200 p-5 animate-pulse h-28" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <>
           {isBuyer && (
-            <>
-              <div 
-                onClick={() => handleKPIClick('active')}
-                className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:border-[#4881F8] hover:shadow-md transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <FileText className="text-[#4881F8]" size={32} />
-                  <span className="text-2xl font-bold">{kpis.activeRFQs}</span>
-                </div>
-                <h3 className="text-sm font-medium text-gray-600">Active RFQs</h3>
-                <p className="text-xs text-gray-500 mt-1">Non-closed RFQs</p>
+            <section>
+              <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 px-1">
+                {isManufacturer ? 'Buyer Activity' : 'Your RFQs'}
+              </h2>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {buyerStats.map((stat) => (
+                  <StatCard
+                    key={stat.label}
+                    label={stat.label}
+                    value={stat.value}
+                    hint={stat.hint}
+                    onClick={() => handleKPIClick(stat.filter)}
+                  />
+                ))}
               </div>
-              <div 
-                onClick={() => handleKPIClick('REQUESTS_PENDING')}
-                className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:border-[#4881F8] hover:shadow-md transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <Clock className="text-[#4881F8]" size={32} />
-                  <span className="text-2xl font-bold">{kpis.awaitingSupplier}</span>
-                </div>
-                <h3 className="text-sm font-medium text-gray-600">Awaiting Supplier Selection</h3>
-                <p className="text-xs text-gray-500 mt-1">RFQs with pending requests</p>
-              </div>
-              <div 
-                onClick={() => handleKPIClick('IN_PRODUCTION')}
-                className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:border-[#4881F8] hover:shadow-md transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <Factory className="text-[#4881F8]" size={32} />
-                  <span className="text-2xl font-bold">{kpis.inProduction}</span>
-                </div>
-                <h3 className="text-sm font-medium text-gray-600">In Production</h3>
-                <p className="text-xs text-gray-500 mt-1">RFQs being manufactured</p>
-              </div>
-              <div 
-                onClick={() => handleKPIClick('SHIPPED')}
-                className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:border-[#4881F8] hover:shadow-md transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <Package className="text-[#4881F8]" size={32} />
-                  <span className="text-2xl font-bold">{kpis.awaitingConfirmation}</span>
-                </div>
-                <h3 className="text-sm font-medium text-gray-600">Awaiting Confirmation</h3>
-                <p className="text-xs text-gray-500 mt-1">Deliveries to confirm</p>
-              </div>
-            </>
+            </section>
           )}
+
           {isManufacturer && (
-            <>
-              <div 
-                onClick={() => handleKPIClick('matching')}
-                className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:border-[#4881F8] hover:shadow-md transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <FileText className="text-[#4881F8]" size={32} />
-                  <span className="text-2xl font-bold">{kpis.matchingRFQs}</span>
-                </div>
-                <h3 className="text-sm font-medium text-gray-600">Matching RFQs</h3>
-                <p className="text-xs text-gray-500 mt-1">RFQs matching your profile</p>
+            <section>
+              <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 px-1">
+                {isBuyer ? 'Seller Activity' : 'Your Pipeline'}
+              </h2>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {manufacturerStats.map((stat) => (
+                  <StatCard
+                    key={stat.label}
+                    label={stat.label}
+                    value={stat.value}
+                    hint={stat.hint}
+                    onClick={() => handleKPIClick(stat.filter)}
+                  />
+                ))}
               </div>
-              <div 
-                onClick={() => handleKPIClick('requested')}
-                className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:border-[#4881F8] hover:shadow-md transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <Clock className="text-[#4881F8]" size={32} />
-                  <span className="text-2xl font-bold">{kpis.requestedRFQs}</span>
-                </div>
-                <h3 className="text-sm font-medium text-gray-600">RFQs Requested</h3>
-                <p className="text-xs text-gray-500 mt-1">Pending buyer decision</p>
-              </div>
-              <div 
-                onClick={() => handleKPIClick('accepted')}
-                className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:border-[#4881F8] hover:shadow-md transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <CheckCircle className="text-[#4881F8]" size={32} />
-                  <span className="text-2xl font-bold">{kpis.acceptedRFQs}</span>
-                </div>
-                <h3 className="text-sm font-medium text-gray-600">Accepted RFQs</h3>
-                <p className="text-xs text-gray-500 mt-1">Active jobs</p>
-              </div>
-              <div 
-                onClick={() => handleKPIClick('IN_PRODUCTION')}
-                className="bg-white border border-gray-200 rounded-lg p-6 cursor-pointer hover:border-[#4881F8] hover:shadow-md transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <Factory className="text-[#4881F8]" size={32} />
-                  <span className="text-2xl font-bold">{kpis.inProductionJobs}</span>
-                </div>
-                <h3 className="text-sm font-medium text-gray-600">In Production</h3>
-                <p className="text-xs text-gray-500 mt-1">Jobs being manufactured</p>
-              </div>
-            </>
+            </section>
           )}
-        </div>
+        </>
       )}
 
-      {/* Recent Activity Lists */}
+      {/* Recent buyer requests */}
       {isBuyer && recentRequests.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+        <section className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">New RFQ Requests</h2>
-            <Link 
-              to="/my-rfqs" 
-              className="text-sm text-[#4881F8] hover:underline flex items-center"
-            >
-              View all <ArrowRight size={16} className="ml-1" />
+            <h2 className="text-lg font-bold text-[#01364a]">New manufacturer requests</h2>
+            <Link to="/my-rfqs" className="text-sm font-medium text-[#4881F8] hover:underline flex items-center gap-1">
+              View all <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="space-y-3">
+          <div className="divide-y divide-gray-100">
             {recentRequests.map((rfq) => (
               <Link
                 key={rfq._id}
                 to={`/my-rfqs/${rfq._id}?tab=requests`}
-                className="block p-4 border border-gray-200 rounded-lg hover:border-[#4881F8] hover:bg-blue-50 transition-colors"
+                className="flex items-center justify-between py-4 first:pt-0 last:pb-0 hover:text-[#4881F8] transition-colors group"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{rfq.title}</h3>
-                    <p className="text-sm text-gray-600">RFQ #{rfq._id.toString().slice(-6)}</p>
-                  </div>
-                  <div className="flex items-center text-sm text-[#4881F8]">
-                    <AlertCircle size={16} className="mr-1" />
-                    New requests
-                  </div>
+                <div>
+                  <p className="font-semibold text-gray-900 group-hover:text-[#4881F8]">{rfq.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">RFQ #{rfq._id.toString().slice(-6)} · Review requests</p>
                 </div>
+                <ArrowRight size={16} className="text-gray-300 group-hover:text-[#4881F8] shrink-0" />
               </Link>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
+      {/* AI recommendations for manufacturers */}
       {isManufacturer && newMatchingRFQs.length > 0 && (
-        <div className="bg-gradient-to-br from-[#01364a] to-[#044c66] rounded-3xl p-8 mb-8 text-white shadow-2xl relative overflow-hidden group">
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center">
-                  <AIIcon className="text-blue-200" size={24} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black tracking-tight">AI Tailored for You</h2>
-                  <p className="text-blue-200 text-sm font-medium">Smart matches based on your factory capabilities</p>
-                </div>
-              </div>
-              <Link 
-                to="/rfqs-pool" 
-                className="px-6 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl text-sm font-bold transition-all flex items-center gap-2 border border-white/10"
-              >
-                Explore All <ArrowRight size={16} />
-              </Link>
+        <section className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-bold text-[#01364a]">Recommended for you</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Based on your factory capabilities</p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {newMatchingRFQs.slice(0, 3).map((rfq) => (
-                <Link
-                  key={rfq._id}
-                  to={`/rfqs-pool/${rfq._id}`}
-                  className="block p-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all hover:-translate-y-1"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-[10px] font-black uppercase tracking-wider rounded-lg border border-blue-500/30">
-                      {rfq.workpieces?.[0]?.technology?.replace('_', ' ') || 'SMART MATCH'}
-                    </span>
-                    <Zap size={14} className="text-yellow-400 fill-yellow-400" />
-                  </div>
-                  <h3 className="font-bold text-lg mb-1 truncate">{rfq.title}</h3>
-                  <p className="text-xs text-blue-200 mb-4 line-clamp-1">
-                    {rfq.workpieces?.[0]?.material} • {rfq.country}
-                  </p>
-                  <div className="flex items-center justify-between text-[10px] font-bold text-blue-300/60 uppercase">
-                    <span>RFQ #{rfq._id.toString().slice(-6)}</span>
-                    <span className="flex items-center gap-1 text-white">View <ArrowRight size={12} /></span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <Link to="/rfqs-pool" className="text-sm font-medium text-[#4881F8] hover:underline flex items-center gap-1">
+              Browse pool <ArrowRight size={14} />
+            </Link>
           </div>
-        </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {newMatchingRFQs.slice(0, 3).map((rfq) => (
+              <Link
+                key={rfq._id}
+                to={`/rfqs-pool/${rfq._id}`}
+                className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:border-[#4881F8] hover:bg-blue-50/30 transition-all"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#4881F8]">
+                  {rfq.workpieces?.[0]?.technology?.replace(/_/g, ' ') || 'Match'}
+                </span>
+                <p className="font-semibold text-gray-900 mt-2 truncate">{rfq.title}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {rfq.workpieces?.[0]?.material} · {rfq.country}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* Quick Actions */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Quick actions */}
+      <section>
+        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 px-1">Quick Actions</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {isBuyer && (
-            <Link
-              to="/start-rfq"
-              className="p-4 border border-gray-200 rounded-lg hover:border-[#4881F8] hover:bg-blue-50 transition-colors"
-            >
-              <div className="flex items-center mb-2">
-                <PlusCircle className="text-[#4881F8] mr-2" size={20} />
-                <h3 className="font-medium">Create New RFQ</h3>
-              </div>
-              <p className="text-sm text-gray-600">Start a new request for quotation</p>
-            </Link>
+            <QuickLink to="/start-rfq" title="Create New RFQ" description="Publish a sourcing request to the pool" />
           )}
           {isManufacturer && (
-            <Link
-              to="/rfqs-pool"
-              className="p-4 border border-gray-200 rounded-lg hover:border-[#4881F8] hover:bg-blue-50 transition-colors"
-            >
-              <div className="flex items-center mb-2">
-                <FileText className="text-[#4881F8] mr-2" size={20} />
-                <h3 className="font-medium">Browse RFQ Pool</h3>
-              </div>
-              <p className="text-sm text-gray-600">Find RFQs matching your capabilities</p>
-            </Link>
+            <QuickLink to="/rfqs-pool" title="Browse RFQ Pool" description="Find jobs matching your capabilities" />
           )}
           {isManufacturer && (
-            <Link
-              to="/analytics"
-              className="p-4 border border-gray-200 rounded-lg hover:border-[#4881F8] hover:bg-blue-50 transition-colors"
-            >
-              <div className="flex items-center mb-2">
-                <BarChart3 className="text-[#4881F8] mr-2" size={20} />
-                <h3 className="font-medium">View Analytics</h3>
-              </div>
-              <p className="text-sm text-gray-600">Track your performance metrics</p>
-            </Link>
+            <QuickLink to="/analytics" title="View Analytics" description="Track performance and pipeline metrics" />
           )}
-          <Link
-            to="/profile"
-            className="p-4 border border-gray-200 rounded-lg hover:border-[#4881F8] hover:bg-blue-50 transition-colors"
-          >
-            <div className="flex items-center mb-2">
-              <Users className="text-[#4881F8] mr-2" size={20} />
-              <h3 className="font-medium">Update Profile</h3>
-            </div>
-            <p className="text-sm text-gray-600">Complete your profile information</p>
-          </Link>
+          <QuickLink to="/company-profile" title="Company Profile" description="Update your public page, gallery and documents" />
+          <QuickLink to="/profile" title="Account Settings" description="Edit company info and preferences" />
         </div>
-      </div>
+      </section>
     </div>
   );
 };
 
 export default DashboardPage;
-

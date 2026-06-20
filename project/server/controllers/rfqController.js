@@ -10,6 +10,7 @@ const {
   getRfqRequestLimit,
   countRfqRequestsInPeriod
 } = require('../utils/subscriptionUtils');
+const { sanitizeRfqForManufacturerView, sanitizePoolRfq, isSelectedSupplier } = require('../utils/rfqVisibilityUtils');
 
 // @desc    Create new RFQ
 // @route   POST /api/rfqs
@@ -272,7 +273,7 @@ const getRFQPool = async (req, res) => {
         }
 
         return {
-          ...rfq.toObject(),
+          ...sanitizePoolRfq(rfq, manufacturer),
           matchScore: Math.min(score, 100)
         };
       })
@@ -352,30 +353,35 @@ const getRFQById = async (req, res) => {
     // Check access permissions
     const userId = req.user._id;
     const isBuyer = rfq.buyerId._id.toString() === userId.toString();
-    const isManufacturer = rfq.selectedManufacturerId && 
-      rfq.selectedManufacturerId._id.toString() === userId.toString();
+    const isSelectedMfr = isSelectedSupplier(rfq, userId);
 
-    if (!isBuyer && !isManufacturer && req.user.userType !== 'ADMIN') {
-      const isOpenPoolRfq = rfq.status === 'OPEN_FOR_REQUESTS' || rfq.status === 'REQUESTS_PENDING';
-      const canPreviewFromPool = (req.user.userType === 'MANUFACTURER' || req.user.userType === 'HYBRID') && isOpenPoolRfq;
-      if (canPreviewFromPool) {
+    if (!isBuyer && req.user.userType !== 'ADMIN' && !isSelectedMfr) {
+      if (req.user.userType === 'MANUFACTURER' || req.user.userType === 'HYBRID') {
+        const isOpenPoolRfq = rfq.status === 'OPEN_FOR_REQUESTS' || rfq.status === 'REQUESTS_PENDING';
+
+        if (isOpenPoolRfq) {
+          return res.json({
+            success: true,
+            data: sanitizeRfqForManufacturerView(rfq, req.user)
+          });
+        }
+
+        const request = await ManufacturerRequest.findOne({
+          rfqId: rfq._id,
+          manufacturerId: userId
+        });
+
+        if (!request) {
+          return res.status(403).json({ message: 'Access denied' });
+        }
+
         return res.json({
           success: true,
-          data: {
-            ...rfq.toObject(),
-            manufacturerRequests: []
-          }
+          data: sanitizeRfqForManufacturerView(rfq, req.user)
         });
       }
-      // Check if manufacturer has requested this RFQ
-      const request = await ManufacturerRequest.findOne({
-        rfqId: rfq._id,
-        manufacturerId: userId
-      });
 
-      if (!request) {
-        return res.status(403).json({ message: 'Access denied' });
-      }
+      return res.status(403).json({ message: 'Access denied' });
     }
 
     // Get manufacturer requests if buyer

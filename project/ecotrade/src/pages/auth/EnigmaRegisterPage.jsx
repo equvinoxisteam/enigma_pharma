@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff, Upload } from 'lucide-react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { authAPI } from '../../api/authAPI';
 import { useToast } from '../../contexts/ToastContext';
 import { countries } from '../../data/countries';
@@ -261,33 +260,32 @@ const EnigmaRegisterPage = () => {
   const roleLabel = role === 'BUYER' ? 'Buyer' : role === 'MANUFACTURER' ? 'Manufacturer' : 'Hybrid';
 
   return (
-    <div className="min-h-screen px-4 py-6 sm:px-6 sm:py-8" style={{ background: 'linear-gradient(135deg,#06091a 0%,#0d1433 50%,#0f172a 100%)', fontFamily: "'Inter',sans-serif" }}>
+    <div className="min-h-screen px-4 py-6 sm:px-6 sm:py-10 bg-[#f4f7fb] text-[#01364a]" style={{ fontFamily: "'Inter',sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        .reg-input { width:100%; padding:0.75rem 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; font-size:0.9rem; outline:none; transition:all 0.2s; box-sizing:border-box; }
-        .reg-input:focus { border-color:rgba(72,129,248,0.6); background:rgba(72,129,248,0.06); box-shadow:0 0 0 3px rgba(72,129,248,0.12); }
-        .reg-input::placeholder { color:rgba(255,255,255,0.28); }
-        .reg-label { display:block; color:rgba(255,255,255,0.7); font-size:0.82rem; font-weight:500; margin-bottom:0.4rem; }
-        .reg-error { color:rgba(248,113,113,0.9); font-size:0.78rem; margin-top:0.3rem; }
-        .reg-section-title { color:#fff; font-size:1.2rem; font-weight:700; margin-bottom:1.25rem; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        .reg-input { width:100%; padding:0.75rem 1rem; background:#fafbfd; border:1px solid rgba(1,54,74,0.14); border-radius:12px; color:#01364a; font-size:0.9rem; outline:none; transition:all 0.2s; box-sizing:border-box; }
+        .reg-input:focus { border-color:#4881F8; background:#fff; box-shadow:0 0 0 3px rgba(72,129,248,0.12); }
+        .reg-input::placeholder { color:rgba(1,54,74,0.35); }
+        .reg-label { display:block; color:#01364a; font-size:0.82rem; font-weight:600; margin-bottom:0.4rem; }
+        .reg-error { color:#dc2626; font-size:0.78rem; margin-top:0.3rem; }
+        .reg-section-title { color:#01364a; font-size:1.2rem; font-weight:800; margin-bottom:1.25rem; }
         .reg-check { accent-color:#4881F8; width:15px; height:15px; cursor:pointer; }
-        select.reg-input option { background:#0d1433; color:#fff; }
+        select.reg-input option { background:#fff; color:#01364a; }
         @keyframes spin { to { transform:rotate(360deg); } }
       `}</style>
       <div style={{ maxWidth: '860px', margin: '0 auto' }}>
-        {/* Header */}
         <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
           <div style={{ marginBottom: '1.5rem' }}>
             <img src="/enigma-logo.svg" alt="Enigma" style={{ height: '52px', width: 'auto', margin: '0 auto' }} />
           </div>
-          <button onClick={() => navigate('/role-selection')} style={{ display:'inline-flex', alignItems:'center', gap:'0.4rem', color:'rgba(255,255,255,0.45)', background:'none', border:'none', cursor:'pointer', fontSize:'0.875rem', marginBottom:'1rem' }}>
-            <ArrowLeft size={16} /> Back to Role Selection
+          <button type="button" onClick={() => navigate('/role-selection')} style={{ color:'#4881F8', background:'none', border:'none', cursor:'pointer', fontSize:'0.875rem', fontWeight:600, marginBottom:'1rem' }}>
+            ← Back to role selection
           </button>
           
-          <h1 style={{ color:'#fff', fontSize:'clamp(1.5rem,3vw,2rem)', fontWeight:800, marginBottom:'0.4rem', letterSpacing:'-0.015em' }}>
-            Sign up as <span style={{ background:'linear-gradient(90deg,#4881F8,#a78bfa)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{roleLabel}</span>
+          <h1 style={{ color:'#01364a', fontSize:'clamp(1.5rem,3vw,2rem)', fontWeight:800, marginBottom:'0.4rem', letterSpacing:'-0.015em' }}>
+            Sign up as <span style={{ color:'#4881F8' }}>{roleLabel}</span>
           </h1>
-          <p style={{ color:'rgba(255,255,255,0.45)', fontSize:'0.9rem' }}>Complete your registration to get started</p>
+          <p style={{ color:'rgba(1,54,74,0.55)', fontSize:'0.9rem' }}>Complete your registration to get started</p>
         </div>
 
         {/* Progress Steps */}
@@ -295,16 +293,16 @@ const EnigmaRegisterPage = () => {
           {[...Array(totalSteps)].map((_, i) => (
             <React.Fragment key={i}>
               <div style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
-                <div style={{ width:'36px', height:'36px', borderRadius:'50%', background: i+1 <= currentStep ? 'linear-gradient(135deg,#4881F8,#6366f1)' : 'rgba(255,255,255,0.08)', border: i+1 <= currentStep ? 'none' : '1px solid rgba(255,255,255,0.12)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:'0.85rem', color: i+1 <= currentStep ? '#fff' : 'rgba(255,255,255,0.4)', transition:'all 0.3s', boxShadow: i+1 <= currentStep ? '0 0 16px rgba(72,129,248,0.3)' : 'none' }}>{i+1}</div>
-                <span style={{ color: i+1 <= currentStep ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)', fontSize:'0.7rem', marginTop:'0.35rem', fontWeight:500 }}>{['Basic Info','Company'][i] || 'Extra'}</span>
+                <div style={{ width:'36px', height:'36px', borderRadius:'50%', background: i+1 <= currentStep ? 'linear-gradient(135deg,#4881F8,#6366f1)' : '#eef2f7', border: i+1 <= currentStep ? 'none' : '1px solid rgba(1,54,74,0.12)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:'0.85rem', color: i+1 <= currentStep ? '#fff' : 'rgba(1,54,74,0.45)', transition:'all 0.3s' }}>{i+1}</div>
+                <span style={{ color: i+1 <= currentStep ? '#01364a' : 'rgba(1,54,74,0.4)', fontSize:'0.7rem', marginTop:'0.35rem', fontWeight:500 }}>{['Basic Info','Company'][i] || 'Extra'}</span>
               </div>
-              {i < totalSteps - 1 && <div style={{ flex:1, height:'2px', background: i+1 < currentStep ? '#4881F8' : 'rgba(255,255,255,0.08)', margin:'0 0.75rem', marginBottom:'1.4rem', transition:'background 0.3s' }} />}
+              {i < totalSteps - 1 && <div style={{ flex:1, height:'2px', background: i+1 < currentStep ? '#4881F8' : 'rgba(1,54,74,0.1)', margin:'0 0.75rem', marginBottom:'1.4rem', transition:'background 0.3s' }} />}
             </React.Fragment>
           ))}
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-8 lg:p-10" style={{ background:'rgba(255,255,255,0.04)', backdropFilter:'blur(20px)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'20px' }}>
+        <form onSubmit={handleSubmit} className="p-5 sm:p-8 lg:p-10 bg-white border border-[#01364a]/10 rounded-[20px] shadow-xl shadow-[#01364a]/5">
           {/* Step 1: Basic Information */}
           {currentStep === 1 && (
             <div className="space-y-6">
@@ -368,26 +366,24 @@ const EnigmaRegisterPage = () => {
 
                 <div>
                   <label className="reg-label">Password *</label>
-                  <div style={{ position: 'relative' }}>
-                    <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password}
-                      onChange={handleChange} className="reg-input" style={{ paddingRight: '2.5rem', borderColor: errors.password ? 'rgba(248,113,113,0.7)' : '' }} required />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)}
-                      style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0 }}>
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
+                  <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password}
+                    onChange={handleChange} className="reg-input" style={{ borderColor: errors.password ? 'rgba(248,113,113,0.7)' : '' }} required />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    style={{ marginTop: '0.35rem', background: 'none', border: 'none', color: '#4881F8', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, padding: 0 }}>
+                    {showPassword ? 'Hide password' : 'Show password'}
+                  </button>
                   {formData.password && (
                     <div style={{ marginTop: '0.5rem' }}>
                       <div style={{ display: 'flex', gap: '4px', marginBottom: '0.25rem' }}>
                         {[1,2,3,4,5].map(i => {
                           const s = Object.values(validatePassword(formData.password)).filter(Boolean).length;
                           const c = s < 2 ? '#ef4444' : s < 4 ? '#eab308' : '#22c55e';
-                          return <div key={i} style={{ flex:1, height:'3px', borderRadius:'2px', background: i <= s ? c : 'rgba(255,255,255,0.1)', transition:'background 0.3s' }} />;
+                          return <div key={i} style={{ flex:1, height:'3px', borderRadius:'2px', background: i <= s ? c : 'rgba(1,54,74,0.12)', transition:'background 0.3s' }} />;
                         })}
                       </div>
                       <div style={{ display:'flex', flexDirection:'column', gap:'2px', marginTop:'0.4rem' }}>
                         {[[formData.password.length >= 8,'8+ characters'],[/[A-Z]/.test(formData.password),'Uppercase'],[/[a-z]/.test(formData.password),'Lowercase'],[/\d/.test(formData.password),'Number'],[/[!@#$%^&*(),.?":{}|<>]/.test(formData.password),'Special char']].map(([ok,label]) => (
-                          <span key={label} style={{ color: ok ? '#22c55e' : 'rgba(255,255,255,0.3)', fontSize:'0.72rem' }}>{ok ? '✓' : '○'} {label}</span>
+                          <span key={label} style={{ color: ok ? '#22c55e' : 'rgba(1,54,74,0.4)', fontSize:'0.72rem' }}>{ok ? '✓' : '○'} {label}</span>
                         ))}
                       </div>
                     </div>
@@ -397,14 +393,12 @@ const EnigmaRegisterPage = () => {
 
                 <div>
                   <label className="reg-label">Confirm Password *</label>
-                  <div style={{ position: 'relative' }}>
-                    <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword}
-                      onChange={handleChange} className="reg-input" style={{ paddingRight: '2.5rem', borderColor: errors.confirmPassword ? 'rgba(248,113,113,0.7)' : formData.confirmPassword && formData.password === formData.confirmPassword ? 'rgba(34,197,94,0.5)' : '' }} required />
-                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0 }}>
-                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
+                  <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword}
+                    onChange={handleChange} className="reg-input" style={{ borderColor: errors.confirmPassword ? 'rgba(248,113,113,0.7)' : formData.confirmPassword && formData.password === formData.confirmPassword ? 'rgba(34,197,94,0.5)' : '' }} required />
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{ marginTop: '0.35rem', background: 'none', border: 'none', color: '#4881F8', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, padding: 0 }}>
+                    {showConfirmPassword ? 'Hide password' : 'Show password'}
+                  </button>
                   {formData.confirmPassword && (
                     <p style={{ color: formData.password === formData.confirmPassword ? '#22c55e' : 'rgba(248,113,113,0.9)', fontSize: '0.78rem', marginTop: '0.3rem' }}>
                       {formData.password === formData.confirmPassword ? '✓ Passwords match' : '✗ Passwords do not match'}
@@ -646,7 +640,7 @@ const EnigmaRegisterPage = () => {
           </div>
         </form>
         <div style={{ textAlign:'center', marginTop:'1.5rem' }}>
-          <p style={{ color:'rgba(255,255,255,0.4)', fontSize:'0.875rem' }}>Already have an account? <button onClick={() => navigate('/login')} style={{ color:'#4881F8', fontWeight:600, background:'none', border:'none', cursor:'pointer', fontSize:'inherit' }}>Sign In</button></p>
+          <p style={{ color:'rgba(1,54,74,0.55)', fontSize:'0.875rem' }}>Already have an account? <button type="button" onClick={() => navigate('/login')} style={{ color:'#4881F8', fontWeight:600, background:'none', border:'none', cursor:'pointer', fontSize:'inherit' }}>Sign in</button></p>
         </div>
       </div>
     </div>

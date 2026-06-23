@@ -19,13 +19,13 @@ const PricingPage = () => {
       price: '₹0',
       period: '/yr',
       description: 'Discovery and view-only access',
-      rfqLimit: 'View RFQ pool only — cannot send requests',
+      rfqLimit: 'View pharma RFQ pool only — cannot submit bids',
       features: [
-        'Basic search rank',
-        'Enigma-only public profile (identity hidden)',
+        'Basic search rank in CDMO pool',
+        'Enigma Pharma anonymous profile (identity hidden)',
         'Limited AI matching (2 results)',
-        'No capacity, images, PPT or PDF shown',
-        'Browse RFQ Pool (view-only)',
+        'No GMP docs, gallery, or PDFs shown',
+        'Browse Pharma RFQ Pool (view-only)',
         'View buyer invitations (accept requires paid plan)'
       ],
       cta: 'Current Plan',
@@ -37,14 +37,14 @@ const PricingPage = () => {
       price: '₹3,42,000',
       period: '/yr',
       description: 'Essential access for active CDMO partners',
-      rfqLimit: 'Up to 20 RFQ requests / year',
+      rfqLimit: 'Up to 20 RFQ bids / year',
       features: [
-        'Send up to 20 RFQ requests per year',
-        'Full company profile with images',
-        'Capacity display on profile',
+        'Submit up to 20 RFQ bids per year',
+        'Full CDMO company profile with images',
+        'Capacity & batch scale on profile',
         'Full AI matching',
-        'PPT & PDF documents visible',
-        'Request & accept RFQs'
+        'NDA & PDF documents visible after selection',
+        'Bid on & accept pharma RFQs'
       ],
       cta: 'Request Upgrade',
       popular: false
@@ -55,12 +55,12 @@ const PricingPage = () => {
       price: '₹5,22,000',
       period: '/yr',
       description: 'High visibility and verified trust',
-      rfqLimit: 'Up to 40 RFQ requests / year',
+      rfqLimit: 'Up to 40 RFQ bids / year',
       features: [
-        'Send up to 40 RFQ requests per year',
-        'Verified badge on profile',
-        'Enhanced profile with gallery, PPT & PDF',
-        'High search rank in manufacturer pool',
+        'Submit up to 40 RFQ bids per year',
+        'Verified GMP badge on profile',
+        'Enhanced profile with gallery & license docs',
+        'High search rank in CDMO pool',
         'Full AI matching + document search',
         'Priority support'
       ],
@@ -73,13 +73,13 @@ const PricingPage = () => {
       price: '₹15,75,000',
       period: '/yr',
       description: 'Top placement and concierge support',
-      rfqLimit: 'Unlimited RFQ requests',
+      rfqLimit: 'Unlimited RFQ bids',
       features: [
-        'Unlimited RFQ requests',
-        'Top slot in manufacturer search (#1 rank)',
-        'Verified + highlighted badge',
-        'Full gallery, PPT, PDF & capacity',
-        'Exclusive corporate RFQs',
+        'Unlimited RFQ bids',
+        'Top slot in CDMO search (#1 rank)',
+        'Verified + highlighted GMP badge',
+        'Full gallery, licenses & capacity',
+        'Exclusive corporate pharma RFQs',
         'Concierge deals & priority buyer matching'
       ],
       cta: 'Request Upgrade',
@@ -111,10 +111,10 @@ const PricingPage = () => {
   return (
     <div className="w-full py-4 sm:py-6">
       <div className="text-center mb-10 sm:mb-16">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#01364a] mb-4 tracking-tighter">Plans & Pricing</h1>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#01364a] mb-4 tracking-tighter">Enigma Pharma — Plans & Pricing</h1>
         <p className="text-base sm:text-xl text-gray-500 max-w-3xl mx-auto font-medium">
-          Buyers and Hybrid accounts create RFQs. Pure manufacturers browse and request RFQs based on their plan.
-          Admin approves upgrades — downgrades include a 24-hour grace period.
+          Pharma buyers publish RFQs for free. CDMO partners browse and bid based on their plan.
+          Admin approves upgrades — no online payment required.
         </p>
       </div>
 
@@ -181,16 +181,16 @@ const PricingPage = () => {
       <div className="bg-[#01364a] rounded-2xl p-6 sm:p-10 text-white mb-12">
         <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
           <div className="flex-1">
-            <h2 className="text-2xl sm:text-3xl font-black mb-4">Buyer Plan — Always Free</h2>
+            <h2 className="text-2xl sm:text-3xl font-black mb-4">Pharma Buyer — Always Free</h2>
             <p className="text-blue-100 mb-6 max-w-2xl">
-              Buyers create and publish RFQs. Manufacturers cannot create RFQs — they request bids on buyer RFQs.
-              Hybrid accounts get buyer powers plus manufacturer plan features.
+              Sponsors and procurement teams publish unlimited pharma RFQs. CDMO partners cannot create RFQs — they bid on buyer projects.
+              Hybrid accounts get buyer powers plus CDMO plan features.
             </p>
             <div className="grid sm:grid-cols-2 gap-3">
               {[
-                'Unlimited RFQ publishing',
-                'Full AI matching',
-                'Manufacturer discovery & invites',
+                'Unlimited pharma RFQ publishing',
+                'NDA-gated document workflow',
+                'CDMO discovery & invitations',
                 'RFQ management & chat',
                 'Edit/delete RFQs before acceptance',
                 'No subscription fee'
@@ -206,7 +206,7 @@ const PricingPage = () => {
             <Building size={32} className="mb-3 opacity-70" />
             <h3 className="font-bold mb-2">Enterprise buyers?</h3>
             <p className="text-sm text-blue-100 mb-4">Contact us for tender-scale procurement and dedicated support.</p>
-            <a href="mailto:support@equvinoxis.com" className="block text-center py-3 bg-white text-[#01364a] rounded-xl font-bold text-sm">
+            <a href="mailto:info@equvinoxis.com" className="block text-center py-3 bg-white text-[#01364a] rounded-xl font-bold text-sm">
               Contact Sales
             </a>
           </div>

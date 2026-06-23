@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { rfqAPI } from '../api/rfqAPI';
 import { useToast } from '../contexts/ToastContext';
 import { FileText, Search, Clock, CheckCircle, Pencil, MapPin, Globe, Trash2 } from 'lucide-react';
-import { RFQFilesList, WorkpieceSummary } from '../components/RFQDetailsPanel';
+import { RFQFilesList } from '../components/RFQDetailsPanel';
+import { SERVICE_CATEGORY_LABELS } from '../config/pharmaTaxonomy';
 
 const MyRFQsPage = () => {
   const navigate = useNavigate();
@@ -254,16 +255,35 @@ const MyRFQsPage = () => {
                     )}
                   </div>
 
-                  {rfq.workpieces?.length > 0 && (
-                    <div className="grid sm:grid-cols-2 gap-2 mb-4">
-                      {rfq.workpieces.map((wp, i) => (
-                        <WorkpieceSummary key={i} workpiece={wp} index={i} />
-                      ))}
+                  {(rfq.pharmaProject?.serviceCategory || rfq.ndaFile) && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {rfq.pharmaProject?.serviceCategory && (
+                        <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-semibold">
+                          {SERVICE_CATEGORY_LABELS[rfq.pharmaProject.serviceCategory] || rfq.pharmaProject.serviceCategory.replace(/_/g, ' ')}
+                        </span>
+                      )}
+                      {rfq.pharmaProject?.moleculeName && (
+                        <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-semibold">
+                          {rfq.pharmaProject.moleculeName}
+                        </span>
+                      )}
+                      {rfq.pharmaProject?.developmentPhase && (
+                        <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-semibold">
+                          {rfq.pharmaProject.developmentPhase.replace(/_/g, ' ')}
+                        </span>
+                      )}
+                      {rfq.ndaFile && (
+                        <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs rounded-full font-semibold">
+                          NDA attached
+                        </span>
+                      )}
                     </div>
                   )}
 
                   <div className="mb-3">
-                    <RFQFilesList workpieces={rfq.workpieces} ndaFile={rfq.ndaFile} compact />
+                    {rfq.ndaFile && !rfq.pharmaProject?.serviceCategory && (
+                      <RFQFilesList workpieces={[]} ndaFile={rfq.ndaFile} compact />
+                    )}
                   </div>
 
                   {rfq.requiredCertificates?.length > 0 && (
@@ -280,7 +300,7 @@ const MyRFQsPage = () => {
                     <div className="pt-3 border-t border-gray-200">
                       <div className="flex items-center text-sm text-[#4881F8]">
                         <Clock size={16} className="mr-2" />
-                        New manufacturer requests available
+                        New CDMO bids available
                       </div>
                     </div>
                   )}

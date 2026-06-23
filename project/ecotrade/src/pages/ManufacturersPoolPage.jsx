@@ -8,7 +8,7 @@ import { hasFeature, FEATURE_KEYS, PLAN_TYPES, getEffectivePlanType } from '../c
 import { invitationAPI } from '../api/invitationAPI';
 import { rfqAPI } from '../api/rfqAPI';
 import { searchAPI } from '../api/searchAPI';
-import Button from '../components/ui/Button';
+import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } from '../config/pharmaTaxonomy';
 
 const ManufacturersPoolPage = () => {
   const navigate = useNavigate();
@@ -32,8 +32,7 @@ const ManufacturersPoolPage = () => {
   const [selectedManufacturer, setSelectedManufacturer] = useState(null);
   const [availableRFQs, setAvailableRFQs] = useState([]);
 
-  const technologyOptions = ['CNC', 'TURNING', 'MILLING', '3D_PRINTING', 'SHEET_METAL', 'DIE_CASTING', 'INJECTION_MOLDING', 'STAMPING', 'WELDING', 'ASSEMBLY', 'OTHER'];
-  const partTypeOptions = ['Gear', 'Pipe', 'Bracket', 'Housing', 'Shaft', 'Bearing', 'Valve', 'Connector', 'Mount', 'Cover', 'Other'];
+  const serviceCategoryOptions = SERVICE_CATEGORIES.slice(0, 10);
   const companySizeOptions = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'];
 
   useEffect(() => {
@@ -110,10 +109,10 @@ const ManufacturersPoolPage = () => {
     }
   };
 
-  const handleTechnologyToggle = (tech) => {
+  const handleServiceCategoryToggle = (cat) => {
     const current = filters.technologies || [];
-    const updated = current.includes(tech) ? current.filter(t => t !== tech) : [...current, tech];
-    setFilters(prev => ({ ...prev, technologies: updated }));
+    const updated = current.includes(cat) ? current.filter((t) => t !== cat) : [...current, cat];
+    setFilters((prev) => ({ ...prev, technologies: updated }));
   };
 
   return (
@@ -181,17 +180,18 @@ const ManufacturersPoolPage = () => {
                 />
              </div>
              <div className="lg:col-span-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 block">Manufacturing Protocols</label>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 block">Service Categories</label>
                 <div className="flex flex-wrap gap-2">
-                  {technologyOptions.slice(0, 8).map(tech => (
+                  {serviceCategoryOptions.map((cat) => (
                     <button
-                      key={tech}
-                      onClick={() => handleTechnologyToggle(tech)}
+                      key={cat}
+                      type="button"
+                      onClick={() => handleServiceCategoryToggle(cat)}
                       className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${
-                        filters.technologies.includes(tech) ? 'bg-[#4881F8] text-white shadow-xl shadow-blue-500/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        filters.technologies.includes(cat) ? 'bg-[#4881F8] text-white shadow-xl shadow-blue-500/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                       }`}
                     >
-                      {tech}
+                      {SERVICE_CATEGORY_LABELS[cat] || cat.replace(/_/g, ' ')}
                     </button>
                   ))}
                 </div>

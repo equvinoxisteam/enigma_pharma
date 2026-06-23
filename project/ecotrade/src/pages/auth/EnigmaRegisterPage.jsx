@@ -7,6 +7,9 @@ import OtherTextInput from '../../components/ui/OtherTextInput';
 import {
   resolveOtherInArray,
 } from '../../utils/otherOption';
+import {
+  SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, GMP_CERTIFICATIONS, GMP_LABELS
+} from '../../config/pharmaTaxonomy';
 
 const EnigmaRegisterPage = () => {
   const navigate = useNavigate();
@@ -63,19 +66,9 @@ const EnigmaRegisterPage = () => {
     preferredLeadTime: ''
   });
 
-  const manufacturingTypesOptions = [
-    'API_MANUFACTURING', 'API_INTERMEDIATES', 'FORMULATION_DEVELOPMENT', 'CLINICAL_TRIAL_MFG',
-    'COMMERCIAL_CDMO', 'BIOLOGICS_BIOSIMILARS', 'HPAPI_ONCOLOGY', 'FILL_FINISH', 'OTHER'
-  ];
+  const manufacturingTypesOptions = SERVICE_CATEGORIES;
 
-  const materialOptions = [
-    'Aluminum', 'Steel', 'Stainless Steel', 'Brass', 'Copper', 
-    'Titanium', 'Plastic/Polymers', 'Composites', 'Others'
-  ];
-
-  const certificationOptions = [
-    'WHO_GMP', 'US_FDA_CGMP', 'EU_GMP', 'ISO_13485', 'PIC_S', 'ISO_9001', 'OTHER'
-  ];
+  const certificationOptions = GMP_CERTIFICATIONS;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -276,14 +269,21 @@ const EnigmaRegisterPage = () => {
         .reg-label { display:block; color:#01364a; font-size:0.82rem; font-weight:600; margin-bottom:0.4rem; }
         .reg-error { color:#dc2626; font-size:0.78rem; margin-top:0.3rem; }
         .reg-section-title { color:#01364a; font-size:1.2rem; font-weight:800; margin-bottom:1.25rem; }
-        .reg-check { accent-color:#4881F8; width:15px; height:15px; cursor:pointer; }
+        .reg-check { accent-color:#4881F8; width:16px; height:16px; min-width:16px; cursor:pointer; flex-shrink:0; }
+        .reg-check-label { display:flex; align-items:flex-start; gap:0.5rem; cursor:pointer; color:#01364a; font-size:0.875rem; font-weight:500; line-height:1.35; }
+        .reg-hint { color:rgba(1,54,74,0.5); font-size:0.78rem; margin-top:0.35rem; }
+        .reg-subsection { margin-top:2rem; padding-top:1.5rem; border-top:1px solid rgba(1,54,74,0.1); }
+        .reg-subsection-title { color:#01364a; font-size:1rem; font-weight:700; margin-bottom:1.25rem; }
+        .reg-nav-back { padding:0.7rem 1.5rem; border-radius:10px; border:1px solid rgba(1,54,74,0.15); background:#fff; color:rgba(1,54,74,0.7); font-size:0.9rem; font-weight:500; cursor:pointer; transition:all 0.2s; }
+        .reg-nav-back:disabled { opacity:0.35; cursor:not-allowed; }
+        .reg-nav-back:not(:disabled):hover { border-color:#4881F8; color:#4881F8; }
         select.reg-input option { background:#fff; color:#01364a; }
         @keyframes spin { to { transform:rotate(360deg); } }
       `}</style>
       <div style={{ maxWidth: '860px', margin: '0 auto' }}>
         <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
           <div style={{ marginBottom: '1.5rem' }}>
-            <img src="/enigma-logo.svg" alt="Enigma" style={{ height: '52px', width: 'auto', margin: '0 auto' }} />
+            <img src="/enigma-logo.svg" alt="Enigma Pharma" style={{ height: '52px', width: 'auto', margin: '0 auto' }} />
           </div>
           <button type="button" onClick={() => navigate('/role-selection')} style={{ color:'#4881F8', background:'none', border:'none', cursor:'pointer', fontSize:'0.875rem', fontWeight:600, marginBottom:'1rem' }}>
             ← Back to role selection
@@ -460,7 +460,7 @@ const EnigmaRegisterPage = () => {
                     placeholder="e.g. 29ABCDE1234F1Z5 (15-character GSTIN)"
                     className="reg-input"
                   />
-                  <p className="reg-error" style={{ color: 'rgba(255,255,255,0.35)', marginTop: '0.35rem' }}>
+                  <p className="reg-hint">
                     Optional. Indian GST format: 2-digit state + 10-char PAN + entity + Z + checksum.
                   </p>
                 </div>
@@ -496,17 +496,17 @@ const EnigmaRegisterPage = () => {
 
               {/* CDMO Service Categories */}
               {!isBuyer && (
-              <div style={{ marginTop:'2rem', paddingTop:'1.5rem', borderTop:'1px solid rgba(255,255,255,0.08)' }}>
-                <h3 style={{ color:'rgba(255,255,255,0.85)', fontSize:'1rem', fontWeight:600, marginBottom:'1.25rem' }}>CDMO Service Categories</h3>
+              <div className="reg-subsection">
+                <h3 className="reg-subsection-title">CDMO Service Categories</h3>
                 
                 <div style={{ marginBottom: '1.5rem' }}>
                   <label className="reg-label">Service Categories * (Select at least one)</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {manufacturingTypesOptions.map((type) => (
-                      <label key={type} style={{ display:'flex', alignItems:'center', gap:'0.5rem', cursor:'pointer', color:'rgba(255,255,255,0.7)', fontSize:'0.85rem' }}>
+                      <label key={type} className="reg-check-label">
                         <input type="checkbox" checked={formData.manufacturingTypes.includes(type)}
                           onChange={() => handleArrayChange('manufacturingTypes', type)} className="reg-check" />
-                        {type.replace('_', ' ')}
+                        <span>{SERVICE_CATEGORY_LABELS[type] || type.replace(/_/g, ' ')}</span>
                       </label>
                     ))}
                   </div>
@@ -523,12 +523,12 @@ const EnigmaRegisterPage = () => {
 
                 <div style={{ marginBottom: '1.5rem' }}>
                   <label className="reg-label">GMP Certifications</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {certificationOptions.map((cert) => (
-                      <label key={cert} style={{ display:'flex', alignItems:'center', gap:'0.5rem', cursor:'pointer', color:'rgba(255,255,255,0.7)', fontSize:'0.85rem' }}>
+                      <label key={cert} className="reg-check-label">
                         <input type="checkbox" checked={formData.certifications.includes(cert)}
                           onChange={() => handleArrayChange('certifications', cert)} className="reg-check" />
-                        {cert.replace('_', ' ')}
+                        <span>{GMP_LABELS[cert] || cert.replace(/_/g, ' ')}</span>
                       </label>
                     ))}
                   </div>
@@ -559,19 +559,19 @@ const EnigmaRegisterPage = () => {
 
               {/* Buyer Information */}
               {(isBuyer || isHybrid) && (
-              <div style={{ marginTop:'2rem', paddingTop:'1.5rem', borderTop:'1px solid rgba(255,255,255,0.08)' }}>
-                <h3 style={{ color:'rgba(255,255,255,0.85)', fontSize:'1rem', fontWeight:600, marginBottom:'1.25rem' }}>Buyer Information</h3>
+              <div className="reg-subsection">
+                <h3 className="reg-subsection-title">Buyer Information</h3>
                 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="reg-label">Industry Vertical</label>
                     <input type="text" name="industryVertical" value={formData.industryVertical} onChange={handleChange}
-                      placeholder="e.g., Automotive, Aerospace" className="reg-input" />
+                      placeholder="e.g., Oncology, Generics, Biologics" className="reg-input" />
                   </div>
                   <div>
-                    <label className="reg-label">Annual Spending</label>
+                    <label className="reg-label">Annual Sourcing Budget</label>
                     <input type="text" name="annualSpending" value={formData.annualSpending} onChange={handleChange}
-                      placeholder="Estimated annual spend" className="reg-input" />
+                      placeholder="Estimated annual CDMO/API spend" className="reg-input" />
                   </div>
                   <div>
                     <label className="reg-label">Procurement Team Size</label>
@@ -580,7 +580,7 @@ const EnigmaRegisterPage = () => {
                   <div>
                     <label className="reg-label">Preferred Lead Time</label>
                     <input type="text" name="preferredLeadTime" value={formData.preferredLeadTime} onChange={handleChange}
-                      placeholder="e.g., 2-4 weeks" className="reg-input" />
+                      placeholder="e.g., 12–16 weeks for tech transfer" className="reg-input" />
                   </div>
                 </div>
               </div>
@@ -589,9 +589,8 @@ const EnigmaRegisterPage = () => {
           )}
 
           {/* Navigation Buttons */}
-          <div style={{ display:'flex', justifyContent:'space-between', marginTop:'2rem', paddingTop:'1.5rem', borderTop:'1px solid rgba(255,255,255,0.08)', alignItems:'center' }}>
-            <button type="button" onClick={handleBack} disabled={currentStep === 1}
-              style={{ padding:'0.7rem 1.5rem', borderRadius:'10px', border:'1px solid rgba(255,255,255,0.15)', background:'transparent', color: currentStep === 1 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.6)', cursor: currentStep === 1 ? 'not-allowed' : 'pointer', fontSize:'0.9rem', fontWeight:500, transition:'all 0.2s' }}>
+          <div className="reg-subsection" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'2rem' }}>
+            <button type="button" onClick={handleBack} disabled={currentStep === 1} className="reg-nav-back">
               Back
             </button>
             {currentStep < totalSteps ? (

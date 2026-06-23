@@ -17,7 +17,7 @@ const getInvitations = async (req, res) => {
     const manufacturerId = req.user._id;
 
     const invitations = await Invitation.find({ manufacturerId })
-      .populate('rfqId', 'title workpieces status country region')
+      .populate('rfqId', 'title pharmaProject status country region')
       .populate('buyerId', 'fullName companyName country region')
       .sort({ invitedAt: -1 });
 

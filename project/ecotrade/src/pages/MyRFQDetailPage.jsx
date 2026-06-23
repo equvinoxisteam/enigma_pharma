@@ -8,7 +8,11 @@ import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import CADFileViewer from '../components/CADFileViewer';
 import { DetailField, RFQFilesList } from '../components/RFQDetailsPanel';
-import { getFileName } from '../utils/fileUtils';
+import { getFileName, normalizeFileUrl } from '../utils/fileUtils';
+import {
+  SERVICE_CATEGORY_LABELS, DEVELOPMENT_PHASE_LABELS, GMP_LABELS,
+  DOCUMENT_TYPE_LABELS, labelFor
+} from '../config/pharmaTaxonomy';
 import { ArrowLeft, FileText, Users, MessageSquare, Package, CheckCircle, X, Star, Send, Pencil, Save, Loader2, Trash2, Upload } from 'lucide-react';
 import OtherTextInput from '../components/ui/OtherTextInput';
 import { isOtherValue, resolveOtherValue, otherRequiredError } from '../utils/otherOption';
@@ -352,10 +356,13 @@ const MyRFQDetailPage = () => {
 
   if (!rfq) return null;
 
+  const isPharma = Boolean(rfq.pharmaProject?.serviceCategory);
+  const pp = rfq.pharmaProject || {};
+
   const tabs = [
     { id: 'overview', label: 'Overview', show: true },
-    { id: 'workpieces', label: 'Workpieces', show: true },
-    { id: 'requests', label: 'Manufacturer Requests', show: rfq.status !== 'SUPPLIER_SELECTED' },
+    { id: isPharma ? 'project' : 'workpieces', label: isPharma ? 'Project & Documents' : 'Workpieces', show: true },
+    { id: 'requests', label: isPharma ? 'CDMO Bids' : 'Manufacturer Requests', show: rfq.status !== 'SUPPLIER_SELECTED' },
     { id: 'production', label: 'Production & Chat', show: rfq.selectedManufacturerId },
     { id: 'logistics', label: 'Logistics & Closure', show: rfq.status === 'SHIPPED' || rfq.status === 'DELIVERED' }
   ].filter(tab => tab.show);
@@ -376,7 +383,7 @@ const MyRFQDetailPage = () => {
             <p className="text-gray-600">RFQ #{rfq._id.toString().slice(-6)}</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            {canEdit && !isEditing && (
+            {canEdit && !isEditing && !isPharma && (
               <>
                 <button
                   onClick={handleStartEdit}
@@ -728,10 +735,34 @@ const MyRFQDetailPage = () => {
 
                 <div>
                   <h4 className="font-semibold mb-3 text-gray-800">Attached Files</h4>
-                  <RFQFilesList workpieces={rfq.workpieces} ndaFile={rfq.ndaFile} />
+                  {isPharma ? (
+                    <div className="space-y-2">
+                      {rfq.ndaFile && (
+                        <a href={normalizeFileUrl(rfq.ndaFile)} target="_blank" rel="noopener noreferrer" className="text-[#4881F8] font-medium block">
+                          NDA / CDA Document
+                        </a>
+                      )}
+                      {(rfq.documents || []).map((d, i) => (
+                        <a key={i} href={normalizeFileUrl(d.fileUrl)} target="_blank" rel="noopener noreferrer" className="text-[#4881F8] font-medium block">
+                          {DOCUMENT_TYPE_LABELS[d.docType] || d.docType}: {d.fileName || getFileName(d.fileUrl)}
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <RFQFilesList workpieces={rfq.workpieces} ndaFile={rfq.ndaFile} />
+                  )}
                 </div>
 
-                {rfq.workpieces?.length > 0 && (
+                {isPharma && (
+                  <div className="grid md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                    <DetailField label="Service Category" value={labelFor(SERVICE_CATEGORY_LABELS, pp.serviceCategory)} />
+                    <DetailField label="Molecule" value={pp.moleculeName || '—'} />
+                    <DetailField label="Phase" value={labelFor(DEVELOPMENT_PHASE_LABELS, pp.developmentPhase)} />
+                    <DetailField label="Therapeutic Area" value={pp.therapeuticArea || '—'} />
+                  </div>
+                )}
+
+                {!isPharma && rfq.workpieces?.length > 0 && (
                   <div className="space-y-6">
                     <h4 className="font-semibold text-gray-800">Workpieces & Previews</h4>
                     {rfq.workpieces.map((workpiece, index) => (
@@ -760,7 +791,38 @@ const MyRFQDetailPage = () => {
           </div>
         )}
 
-        {activeTab === 'workpieces' && (
+        {(activeTab === 'workpieces' || activeTab === 'project') && isPharma && (
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <DetailField label="Service Category" value={labelFor(SERVICE_CATEGORY_LABELS, pp.serviceCategory)} />
+              <DetailField label="Molecule" value={pp.moleculeName || '—'} />
+              <DetailField label="Development Phase" value={labelFor(DEVELOPMENT_PHASE_LABELS, pp.developmentPhase)} />
+              <DetailField label="Batch Scale" value={pp.batchScale?.replace(/_/g, ' ') || '—'} />
+              <DetailField label="Annual Volume" value={pp.annualVolume || '—'} />
+              <DetailField label="Target Markets" value={(pp.targetMarkets || []).join(', ') || '—'} />
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Regulatory</h4>
+              <p className="text-gray-700">Required GMP: {(rfq.regulatory?.requiredGmp || []).map((g) => GMP_LABELS[g] || g).join(', ') || '—'}</p>
+            </div>
+            {rfq.documents?.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-3">Documents</h4>
+                <ul className="space-y-2">
+                  {rfq.documents.map((d, i) => (
+                    <li key={i}>
+                      <a href={normalizeFileUrl(d.fileUrl)} target="_blank" rel="noopener noreferrer" className="text-[#4881F8] font-medium">
+                        {DOCUMENT_TYPE_LABELS[d.docType] || d.docType}: {d.fileName || 'Document'}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'workpieces' && !isPharma && (
           <div className="space-y-6">
             {rfq.workpieces?.map((workpiece, index) => (
               <div key={index} className="border border-gray-200 rounded-lg p-6">

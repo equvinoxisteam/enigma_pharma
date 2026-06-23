@@ -512,17 +512,20 @@ const requestRFQ = async (req, res) => {
       return res.status(400).json({ message: 'You have already requested this RFQ' });
     }
 
-    // Calculate match score
+    // Calculate match score (pharma)
     let matchScore = 0;
     const manufacturer = req.user;
-    if (rfq.workpieces[0]) {
-      if (manufacturer.manufacturingTypes?.includes(rfq.workpieces[0].technology)) {
-        matchScore += 30;
-      }
-      if (manufacturer.primaryMaterials?.includes(rfq.workpieces[0].material)) {
-        matchScore += 20;
-      }
-    }
+    const mfrCategories = manufacturer.serviceCategories?.length
+      ? manufacturer.serviceCategories
+      : (manufacturer.manufacturingTypes || []);
+    const rfqCat = rfq.pharmaProject?.serviceCategory;
+    if (rfqCat && mfrCategories.includes(rfqCat)) matchScore += 35;
+
+    const mfrGmp = manufacturer.gmpCertifications?.length
+      ? manufacturer.gmpCertifications
+      : (manufacturer.certifications || []);
+    const requiredGmp = rfq.regulatory?.requiredGmp || [];
+    matchScore += mfrGmp.filter((c) => requiredGmp.includes(c)).length * 15;
 
     const manufacturerRequest = await ManufacturerRequest.create({
       rfqId,

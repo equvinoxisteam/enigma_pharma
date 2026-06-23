@@ -62,7 +62,7 @@ const ManufacturersPoolPage = () => {
           ...mfr,
           planType: plan,
           isFree,
-          displayName: isFree ? 'Enigma Manufacturer' : (mfr.companyName || 'Unknown'),
+          displayName: isFree ? 'Enigma Pharma CDMO' : (mfr.companyName || 'Unknown'),
           displayLogo: isFree ? null : mfr.companyLogo,
           displayCountry: mfr.country || 'International',
           isPremium: plan !== PLAN_TYPES.FREE
@@ -127,8 +127,8 @@ const ManufacturersPoolPage = () => {
              </div>
              <CheckCircle size={18} className="text-emerald-500" />
           </div>
-          <h1 className="text-6xl font-black text-[#01364a] tracking-tighter mb-4">Global Discovery</h1>
-          <p className="text-gray-400 font-bold text-xl max-w-2xl">Connect with high-performance manufacturing partners audited for precision and reliability.</p>
+          <h1 className="text-6xl font-black text-[#01364a] tracking-tighter mb-4">CDMO Discovery</h1>
+          <p className="text-gray-400 font-bold text-xl max-w-2xl">Connect with GMP-certified CDMO partners for API, formulation, and biologics manufacturing.</p>
         </div>
         
         <div className="bg-[#01364a] text-white p-8 rounded-[3rem] shadow-2xl flex items-center gap-6 group hover:bg-black transition-all cursor-pointer" onClick={() => window.dispatchEvent(new CustomEvent('open-ai-search'))}>
@@ -150,7 +150,7 @@ const ManufacturersPoolPage = () => {
               <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#4881F8] transition-colors" size={24} />
               <input
                 type="text"
-                placeholder="Search by specialty, machinery, or company name..."
+                placeholder="Search by service category, GMP cert, or company name..."
                 value={filters.keyword}
                 onChange={(e) => setFilters({...filters, keyword: e.target.value})}
                 className="w-full pl-20 pr-10 py-7 bg-gray-50 border-2 border-transparent focus:border-[#4881F8] focus:bg-white rounded-[2rem] text-xl font-bold outline-none transition-all shadow-inner"

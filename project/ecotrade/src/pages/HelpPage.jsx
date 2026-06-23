@@ -20,33 +20,33 @@ const HelpPage = () => {
       category: 'Getting Started',
       questions: [
         {
-          q: 'How do I create my first RFQ?',
-          a: 'Navigate to "Start Your RFQ" from the dashboard. Upload your workpiece file (STL format), fill in the requirements, and submit. Your RFQ will be visible to manufacturers matching your criteria.'
+          q: 'How do I create my first pharma RFQ?',
+          a: 'Go to "Start Your RFQ" from the dashboard. Complete the project details (molecule, phase, service category), upload your NDA/CDA (required), attach supporting documents (PDF), and submit. Your RFQ will be visible to matching CDMO partners.'
         },
         {
           q: 'What file formats are supported?',
-          a: 'We support STL files for 3D models (max 150MB). For additional documents, we support PDF, DOC, and DOCX formats (max 50MB each).'
+          a: 'NDA/CDA and project documents must be PDF format (max 50MB each). CAD/STL files are not used on Enigma Pharma.'
         },
         {
-          q: 'How do I select a manufacturer?',
-          a: 'When manufacturers request your RFQ, you can view their profiles, match scores, and certifications. Click "Accept as supplier" to select a manufacturer.'
+          q: 'How do I select a CDMO partner?',
+          a: 'When CDMOs submit bids on your RFQ, review their profiles, GMP certifications, and match scores. Click "Accept as supplier" to select your manufacturing partner.'
         }
       ]
     },
     {
-      category: 'For Manufacturers',
+      category: 'For CDMO Partners',
       questions: [
         {
           q: 'How do I find RFQs matching my capabilities?',
-          a: 'Use the RFQ Pool page to browse available RFQs. Filters help you find RFQs matching your technologies, materials, and certifications. Match scores indicate how well you fit each RFQ.'
+          a: 'Use the Pharma RFQ Pool to browse open projects. Filter by service category, development phase, country, and required GMP. Match scores reflect alignment with your registered service categories and certifications.'
         },
         {
-          q: 'How do I request an RFQ?',
-          a: 'Click on an RFQ from the pool, review the details, and click "Request RFQ". Provide your proposed lead time and any message to the buyer.'
+          q: 'How do I submit a bid?',
+          a: 'Open an RFQ from the pool, review project and regulatory details, and click "Submit Bid". Provide your proposed lead time and a message to the buyer. NDA documents unlock based on your subscription plan.'
         },
         {
-          q: 'What happens after I\'m selected?',
-          a: 'Once selected, the RFQ appears in your "Accepted RFQs". You can update production status, communicate via chat, and upload shipping documents.'
+          q: 'What happens after I am selected?',
+          a: 'The RFQ appears in "Accepted RFQs". You can update production status, communicate via chat, and manage logistics through delivery.'
         }
       ]
     },

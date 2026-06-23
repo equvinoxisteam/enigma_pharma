@@ -4,7 +4,11 @@ import { rfqAPI } from '../api/rfqAPI';
 import { chatAPI } from '../api/chatAPI';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
-import CADFileViewer from '../components/CADFileViewer';
+import { normalizeFileUrl } from '../utils/fileUtils';
+import {
+  SERVICE_CATEGORY_LABELS, DEVELOPMENT_PHASE_LABELS, GMP_LABELS,
+  DOCUMENT_TYPE_LABELS, labelFor
+} from '../config/pharmaTaxonomy';
 import { ArrowLeft, FileText, MessageSquare, Package, Truck, CheckCircle, Send, Upload } from 'lucide-react';
 
 const AcceptedRFQDetailPage = () => {
@@ -126,9 +130,11 @@ const AcceptedRFQDetailPage = () => {
 
   if (!rfq) return null;
 
+  const pp = rfq?.pharmaProject || {};
+
   const tabs = [
     { id: 'overview', label: 'Overview', show: true },
-    { id: 'workpieces', label: 'Workpieces', show: true },
+    { id: 'project', label: 'Project & Documents', show: true },
     { id: 'production', label: 'Production & Chat', show: true },
     { id: 'logistics', label: 'Logistics', show: rfq.status === 'SHIPPED' || rfq.status === 'DELIVERED' }
   ].filter(tab => tab.show);
@@ -254,36 +260,45 @@ const AcceptedRFQDetailPage = () => {
           </div>
         )}
 
-        {activeTab === 'workpieces' && (
+        {activeTab === 'project' && (
           <div className="space-y-6">
-            {rfq.workpieces?.map((workpiece, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Workpiece {index + 1}</h3>
-                <div className="mb-4 border border-gray-200 rounded-lg overflow-hidden">
-                  <CADFileViewer workpiece={workpiece} height="400px" backgroundColor="#f9fafb" />
-                </div>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Technology</label>
-                    <p className="text-gray-900">{workpiece.technology?.replace('_', ' ')}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Material</label>
-                    <p className="text-gray-900">{workpiece.material}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Quantity</label>
-                    <p className="text-gray-900">{workpiece.quantity}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Dimensions</label>
-                    <p className="text-gray-900">
-                      {workpiece.dimensions.length} × {workpiece.dimensions.width} × {workpiece.dimensions.height} mm
-                    </p>
-                  </div>
-                </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="text-sm font-medium text-gray-500">Service Category</label>
+                <p className="text-gray-900">{labelFor(SERVICE_CATEGORY_LABELS, pp.serviceCategory)}</p>
               </div>
-            ))}
+              <div>
+                <label className="text-sm font-medium text-gray-500">Molecule</label>
+                <p className="text-gray-900">{pp.moleculeName || '—'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Development Phase</label>
+                <p className="text-gray-900">{labelFor(DEVELOPMENT_PHASE_LABELS, pp.developmentPhase)}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Therapeutic Area</label>
+                <p className="text-gray-900">{pp.therapeuticArea || '—'}</p>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-500">Required GMP</label>
+              <p className="text-gray-900">{(rfq.regulatory?.requiredGmp || []).map((g) => GMP_LABELS[g] || g).join(', ') || '—'}</p>
+            </div>
+            {rfq.documents?.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-3">Project Documents</h4>
+                <ul className="space-y-2">
+                  {rfq.documents.map((d, i) => (
+                    <li key={i}>
+                      <a href={normalizeFileUrl(d.fileUrl)} target="_blank" rel="noopener noreferrer" className="text-[#4881F8] hover:underline flex items-center gap-2">
+                        <FileText size={16} />
+                        {DOCUMENT_TYPE_LABELS[d.docType] || d.docType}: {d.fileName || 'Document'}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 

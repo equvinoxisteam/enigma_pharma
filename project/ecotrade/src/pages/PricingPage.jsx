@@ -36,7 +36,7 @@ const PricingPage = () => {
       name: 'Standard',
       price: '₹3,42,000',
       period: '/yr',
-      description: 'Essential access for active manufacturers',
+      description: 'Essential access for active CDMO partners',
       rfqLimit: 'Up to 20 RFQ requests / year',
       features: [
         'Send up to 20 RFQ requests per year',
@@ -61,7 +61,7 @@ const PricingPage = () => {
         'Verified badge on profile',
         'Enhanced profile with gallery, PPT & PDF',
         'High search rank in manufacturer pool',
-        'Full AI matching + STL search',
+        'Full AI matching + document search',
         'Priority support'
       ],
       cta: 'Request Upgrade',

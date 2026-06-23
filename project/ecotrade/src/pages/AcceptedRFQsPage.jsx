@@ -135,30 +135,26 @@ const AcceptedRFQsPage = () => {
                 </div>
 
                 <div className="grid md:grid-cols-4 gap-4 mb-4">
-                  {rfq.workpieces?.[0] && (
-                    <>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Factory size={16} className="mr-2" />
-                        {rfq.workpieces[0].technology?.replace('_', ' ')} • {rfq.workpieces[0].material}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Package size={16} className="mr-2" />
-                        Qty: {rfq.workpieces[0].quantity}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Clock size={16} className="mr-2" />
-                        {rfq.targetDeliveryDate 
-                          ? `Due: ${new Date(rfq.targetDeliveryDate).toLocaleDateString()}`
-                          : 'No delivery date'
-                        }
-                      </div>
-                      {rfq.trackingInfo?.trackingId && (
-                        <div className="flex items-center text-sm text-gray-600">
-                          <Truck size={16} className="mr-2" />
-                          Tracking: {rfq.trackingInfo.trackingId}
-                        </div>
-                      )}
-                    </>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Factory size={16} className="mr-2" />
+                    {(rfq.pharmaProject?.serviceCategory || 'CDMO').replace(/_/g, ' ')}
+                    {rfq.pharmaProject?.moleculeName ? ` · ${rfq.pharmaProject.moleculeName}` : ''}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Package size={16} className="mr-2" />
+                    {rfq.pharmaProject?.developmentPhase?.replace(/_/g, ' ') || 'Phase TBD'}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Clock size={16} className="mr-2" />
+                    {rfq.targetDeliveryDate
+                      ? `Due: ${new Date(rfq.targetDeliveryDate).toLocaleDateString()}`
+                      : 'No delivery date'}
+                  </div>
+                  {rfq.trackingInfo?.trackingId && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Truck size={16} className="mr-2" />
+                      Tracking: {rfq.trackingInfo.trackingId}
+                    </div>
                   )}
                 </div>
 

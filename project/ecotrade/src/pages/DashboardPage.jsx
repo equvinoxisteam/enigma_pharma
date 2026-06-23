@@ -283,7 +283,7 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg font-bold text-[#01364a]">Recommended for you</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Based on your factory capabilities</p>
+              <p className="text-xs text-gray-500 mt-0.5">Based on your CDMO service categories</p>
             </div>
             <Link to="/rfqs-pool" className="text-sm font-medium text-[#4881F8] hover:underline flex items-center gap-1">
               Browse pool <ArrowRight size={14} />
@@ -297,11 +297,11 @@ const DashboardPage = () => {
                 className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:border-[#4881F8] hover:bg-blue-50/30 transition-all"
               >
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#4881F8]">
-                  {rfq.workpieces?.[0]?.technology?.replace(/_/g, ' ') || 'Match'}
+                  {(rfq.pharmaProject?.serviceCategory || 'CDMO').replace(/_/g, ' ')}
                 </span>
                 <p className="font-semibold text-gray-900 mt-2 truncate">{rfq.title}</p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {rfq.workpieces?.[0]?.material} · {rfq.country}
+                  {rfq.pharmaProject?.moleculeName || rfq.pharmaProject?.developmentPhase?.replace(/_/g, ' ') || 'Pharma project'} · {rfq.country}
                 </p>
               </Link>
             ))}

@@ -173,13 +173,10 @@ const EnigmaRegisterPage = () => {
       
       // Manufacturing types are required only for manufacturer-capable roles
       if ((isManufacturer || isHybrid) && formData.manufacturingTypes.length === 0) {
-        newErrors.manufacturingTypes = 'Select at least one manufacturing type';
+        newErrors.manufacturingTypes = 'Select at least one service category';
       }
       if (formData.manufacturingTypes.includes('OTHER') && !formData.otherManufacturingType.trim()) {
-        newErrors.otherManufacturingType = 'Please specify manufacturing type';
-      }
-      if (formData.primaryMaterials.includes('Others') && !formData.otherMaterial.trim()) {
-        newErrors.otherMaterial = 'Please specify material';
+        newErrors.otherManufacturingType = 'Please specify service category';
       }
       if (formData.certifications.includes('OTHER') && !formData.otherCertification.trim()) {
         newErrors.otherCertification = 'Please specify certification';
@@ -267,7 +264,7 @@ const EnigmaRegisterPage = () => {
 
   const totalSteps = 2;
 
-  const roleLabel = role === 'BUYER' ? 'Buyer' : role === 'MANUFACTURER' ? 'Manufacturer' : 'Hybrid';
+  const roleLabel = role === 'BUYER' ? 'Pharma Buyer' : role === 'MANUFACTURER' ? 'CDMO / Manufacturer' : 'Hybrid';
 
   return (
     <div className="min-h-screen px-4 py-6 sm:px-6 sm:py-10 bg-[#f4f7fb] text-[#01364a]" style={{ fontFamily: "'Inter',sans-serif" }}>
@@ -497,13 +494,13 @@ const EnigmaRegisterPage = () => {
                 </div>
               </div>
 
-              {/* Manufacturing Capabilities */}
+              {/* CDMO Service Categories */}
               {!isBuyer && (
               <div style={{ marginTop:'2rem', paddingTop:'1.5rem', borderTop:'1px solid rgba(255,255,255,0.08)' }}>
-                <h3 style={{ color:'rgba(255,255,255,0.85)', fontSize:'1rem', fontWeight:600, marginBottom:'1.25rem' }}>Manufacturing Capabilities</h3>
+                <h3 style={{ color:'rgba(255,255,255,0.85)', fontSize:'1rem', fontWeight:600, marginBottom:'1.25rem' }}>CDMO Service Categories</h3>
                 
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <label className="reg-label">Manufacturing Types * (Select at least one)</label>
+                  <label className="reg-label">Service Categories * (Select at least one)</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {manufacturingTypesOptions.map((type) => (
                       <label key={type} style={{ display:'flex', alignItems:'center', gap:'0.5rem', cursor:'pointer', color:'rgba(255,255,255,0.7)', fontSize:'0.85rem' }}>
@@ -518,53 +515,14 @@ const EnigmaRegisterPage = () => {
                     show={formData.manufacturingTypes.includes('OTHER')}
                     value={formData.otherManufacturingType}
                     onChange={(value) => setFormData((prev) => ({ ...prev, otherManufacturingType: value }))}
-                    placeholder="Specify manufacturing type"
+                    placeholder="Specify service category"
                     className="reg-input mt-3"
                   />
                   {errors.otherManufacturingType && <p className="reg-error">{errors.otherManufacturingType}</p>}
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-4" style={{ marginBottom: '1.5rem' }}>
-                  <div>
-                    <label className="reg-label">Max Height (mm)</label>
-                    <input type="number" value={formData.maxDimensions.height}
-                      onChange={(e) => handleDimensionChange('height', e.target.value)} className="reg-input" />
-                  </div>
-                  <div>
-                    <label className="reg-label">Max Width (mm)</label>
-                    <input type="number" value={formData.maxDimensions.width}
-                      onChange={(e) => handleDimensionChange('width', e.target.value)} className="reg-input" />
-                  </div>
-                  <div>
-                    <label className="reg-label">Max Length (mm)</label>
-                    <input type="number" value={formData.maxDimensions.length}
-                      onChange={(e) => handleDimensionChange('length', e.target.value)} className="reg-input" />
-                  </div>
-                </div>
-
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <label className="reg-label">Primary Materials</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    {materialOptions.map((material) => (
-                      <label key={material} style={{ display:'flex', alignItems:'center', gap:'0.5rem', cursor:'pointer', color:'rgba(255,255,255,0.7)', fontSize:'0.85rem' }}>
-                        <input type="checkbox" checked={formData.primaryMaterials.includes(material)}
-                          onChange={() => handleArrayChange('primaryMaterials', material)} className="reg-check" />
-                        {material}
-                      </label>
-                    ))}
-                  </div>
-                  <OtherTextInput
-                    show={formData.primaryMaterials.includes('Others')}
-                    value={formData.otherMaterial}
-                    onChange={(value) => setFormData((prev) => ({ ...prev, otherMaterial: value }))}
-                    placeholder="Specify material"
-                    className="reg-input mt-3"
-                  />
-                  {errors.otherMaterial && <p className="reg-error">{errors.otherMaterial}</p>}
-                </div>
-
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label className="reg-label">Certifications</label>
+                  <label className="reg-label">GMP Certifications</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {certificationOptions.map((cert) => (
                       <label key={cert} style={{ display:'flex', alignItems:'center', gap:'0.5rem', cursor:'pointer', color:'rgba(255,255,255,0.7)', fontSize:'0.85rem' }}>

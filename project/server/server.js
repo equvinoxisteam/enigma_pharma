@@ -194,7 +194,7 @@ app.get('/api/health', (req, res) => {
 // Root route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Enigma API Server - Next-Generation Manufacturing Procurement Platform',
+    message: 'Enigma Pharma API Server - Pharmaceutical CDMO Procurement Platform',
     environment: process.env.NODE_ENV || 'development',
     status: 'running',
     endpoints: {

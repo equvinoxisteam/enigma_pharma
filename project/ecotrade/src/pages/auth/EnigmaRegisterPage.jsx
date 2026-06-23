@@ -64,8 +64,8 @@ const EnigmaRegisterPage = () => {
   });
 
   const manufacturingTypesOptions = [
-    'CNC', '3D_PRINTING', 'SHEET_METAL', 'DIE_CASTING', 
-    'INJECTION_MOLDING', 'STAMPING', 'WELDING', 'ASSEMBLY', 'OTHER'
+    'API_MANUFACTURING', 'API_INTERMEDIATES', 'FORMULATION_DEVELOPMENT', 'CLINICAL_TRIAL_MFG',
+    'COMMERCIAL_CDMO', 'BIOLOGICS_BIOSIMILARS', 'HPAPI_ONCOLOGY', 'FILL_FINISH', 'OTHER'
   ];
 
   const materialOptions = [
@@ -74,7 +74,7 @@ const EnigmaRegisterPage = () => {
   ];
 
   const certificationOptions = [
-    'ISO_9001', 'ISO_13485', 'AS9100', 'IATF_16949', 'ROHS', 'OTHER'
+    'WHO_GMP', 'US_FDA_CGMP', 'EU_GMP', 'ISO_13485', 'PIC_S', 'ISO_9001', 'OTHER'
   ];
 
   const handleChange = (e) => {
@@ -216,6 +216,16 @@ const EnigmaRegisterPage = () => {
         manufacturingTypes: resolveOtherInArray(
           formData.manufacturingTypes,
           formData.otherManufacturingType,
+          ['OTHER']
+        ),
+        serviceCategories: resolveOtherInArray(
+          formData.manufacturingTypes,
+          formData.otherManufacturingType,
+          ['OTHER']
+        ),
+        gmpCertifications: resolveOtherInArray(
+          formData.certifications,
+          formData.otherCertification,
           ['OTHER']
         ),
         primaryMaterials: resolveOtherInArray(

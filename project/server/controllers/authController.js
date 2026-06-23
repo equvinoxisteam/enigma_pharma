@@ -191,8 +191,8 @@ const registerUser = async (req, res) => {
 
     // Validate manufacturing types only for manufacturer-capable roles
     const needsManufacturingProfile = userType === 'MANUFACTURER' || userType === 'HYBRID';
-    if (needsManufacturingProfile && (!manufacturingTypes || manufacturingTypes.length === 0)) {
-      return res.status(400).json({ message: 'At least one manufacturing type must be selected' });
+    if (needsManufacturingProfile && (!req.body.serviceCategories?.length && (!manufacturingTypes || manufacturingTypes.length === 0))) {
+      return res.status(400).json({ message: 'Select at least one service category (API, CDMO, etc.)' });
     }
 
     // Hash password
@@ -241,7 +241,9 @@ const registerUser = async (req, res) => {
     };
 
     // Add all fields for all user types
-    userData.manufacturingTypes = manufacturingTypes || [];
+    userData.manufacturingTypes = manufacturingTypes || req.body.serviceCategories || [];
+    userData.serviceCategories = req.body.serviceCategories || manufacturingTypes || [];
+    userData.gmpCertifications = req.body.gmpCertifications || certifications || [];
     userData.companySize = companySize || '';
     userData.yearsInBusiness = yearsInBusiness || 0;
     userData.maxDimensions = maxDimensions || { height: 0, width: 0, length: 0 };

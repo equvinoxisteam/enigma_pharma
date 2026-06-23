@@ -29,7 +29,7 @@ const ManufacturerProfilePage = () => {
           planType,
           isFree,
           // Anonymization logic
-          displayName: isFree ? 'Enigma Manufacturer' : (profile.companyName || 'Anonymous Manufacturer'),
+          displayName: isFree ? 'Enigma Pharma Partner' : (profile.companyName || 'CDMO Partner'),
           displayLogo: isFree ? null : profile.companyLogo,
           displayBanner: isFree ? null : profile.companyBanner,
           displayDescription: isFree ? 'This manufacturer is part of the Enigma network. To view full credentials and identity, please contact them through an RFQ.' : (profile.description || 'No description provided.'),

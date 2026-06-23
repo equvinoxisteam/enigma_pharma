@@ -1,137 +1,68 @@
 const mongoose = require('mongoose');
+const {
+  SERVICE_CATEGORIES,
+  DEVELOPMENT_PHASES,
+  GMP_CERTIFICATIONS,
+  LICENSE_TYPES,
+  DOCUMENT_TYPES,
+  BATCH_SCALES
+} = require('../config/pharmaTaxonomy');
 
 const rfqSchema = new mongoose.Schema({
-  // Basic Information
-  title: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  description: {
-    type: String,
-    trim: true
-  },
-  buyerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
+  title: { type: String, required: true, trim: true },
+  description: { type: String, trim: true, default: '' },
+  buyerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   status: {
     type: String,
     enum: [
-      'DRAFT',
-      'OPEN_FOR_REQUESTS',
-      'REQUESTS_PENDING',
-      'SUPPLIER_SELECTED',
-      'IN_PRODUCTION',
-      'SHIPPED',
-      'DELIVERED',
-      'CLOSED',
-      'EXPIRED',
-      'CANCELLED'
+      'DRAFT', 'OPEN_FOR_REQUESTS', 'REQUESTS_PENDING', 'SUPPLIER_SELECTED',
+      'IN_PRODUCTION', 'SHIPPED', 'DELIVERED', 'CLOSED', 'EXPIRED', 'CANCELLED'
     ],
     default: 'DRAFT'
   },
-  
-  // Workpieces
-  workpieces: [{
-    mainFile: {
-      type: String, // STL file URL
-      required: true
-    },
-    extraFiles: [{
-      type: String // Additional file URLs
-    }],
-    partType: {
-      type: String, // e.g., Gear, Pipe, Bracket, etc.
-      trim: true
-    },
-    dimensions: {
-      length: { type: Number, default: 0 },
-      width: { type: Number, default: 0 },
-      height: { type: Number, default: 0 },
-      diameter: { type: Number, default: 0 }
-    },
-    technology: {
-      type: String,
-      enum: ['CNC', '3D_PRINTING', 'SHEET_METAL', 'DIE_CASTING', 'INJECTION_MOLDING', 'STAMPING', 'WELDING', 'ASSEMBLY', 'TURNING', 'MILLING', 'OTHER'],
-      required: true
-    },
-    material: {
-      type: String,
-      required: true
-    },
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1
-    }
-  }],
-  
-  // Requirements
-  preferredCurrency: {
-    type: String,
-    default: 'USD'
-  },
-  rfqDeadline: {
-    type: Date,
-    required: true
-  },
-  acceptanceDeadline: {
-    type: Date
-  },
-  partTrackingId: {
-    type: String
-  },
-  requestJustification: {
-    type: String
-  },
-  targetDeliveryDate: {
-    type: Date
-  },
-  shippingTerms: {
-    type: String, // Incoterms
-    default: 'FOB'
-  },
-  country: {
-    type: String,
-    required: true
-  },
-  region: {
-    type: String
-  },
-  communicationLanguage: {
-    type: String,
-    default: 'English'
-  },
-  requiredCertificates: [{
-    type: String,
-    enum: ['ISO_9001', 'ISO_13485', 'AS9100', 'IATF_16949', 'ROHS', 'OTHER']
-  }],
-  notes: {
-    type: String
-  },
-  isCorporateRFQ: {
-    type: Boolean,
-    default: false
+
+  pharmaProject: {
+    serviceCategory: { type: String, enum: SERVICE_CATEGORIES, required: true },
+    serviceCategoryOther: { type: String, default: '' },
+    moleculeName: { type: String, trim: true, default: '' },
+    developmentPhase: { type: String, enum: DEVELOPMENT_PHASES, default: 'OTHER' },
+    therapeuticArea: { type: String, default: '' },
+    targetMarkets: [{ type: String }],
+    batchScale: { type: String, enum: BATCH_SCALES, default: 'NOT_SPECIFIED' },
+    annualVolume: { type: String, default: '' }
   },
 
-  // NDA
-  ndaFile: {
-    type: String // NDA file URL, only visible to selected manufacturer
+  documents: [{
+    docType: { type: String, enum: DOCUMENT_TYPES, default: 'OTHER' },
+    fileUrl: { type: String, required: true },
+    fileName: { type: String, default: '' }
+  }],
+
+  regulatory: {
+    requiredGmp: [{ type: String, enum: GMP_CERTIFICATIONS }],
+    requiredLicenses: [{ type: String, enum: LICENSE_TYPES }],
+    dmfReferences: { type: String, default: '' },
+    stabilityRequired: { type: Boolean, default: false }
   },
-  
-  // Selected Manufacturer
-  selectedManufacturerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  selectedManufacturerRequestId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'ManufacturerRequest'
-  },
-  
-  // Production & Logistics
+
+  ndaFile: { type: String, required: true },
+
+  preferredCurrency: { type: String, default: 'USD' },
+  rfqDeadline: { type: Date, required: true },
+  acceptanceDeadline: { type: Date },
+  projectTrackingId: { type: String },
+  requestJustification: { type: String },
+  targetDeliveryDate: { type: Date },
+  shippingTerms: { type: String, default: 'FOB' },
+  country: { type: String, required: true },
+  region: { type: String },
+  communicationLanguage: { type: String, default: 'English' },
+  notes: { type: String },
+  isCorporateRFQ: { type: Boolean, default: false },
+
+  selectedManufacturerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  selectedManufacturerRequestId: { type: mongoose.Schema.Types.ObjectId, ref: 'ManufacturerRequest' },
+
   productionStatus: {
     type: String,
     enum: ['NOT_STARTED', 'QUALITY_CHECK', 'READY_TO_SHIP', 'SHIPPED'],
@@ -142,35 +73,16 @@ const rfqSchema = new mongoose.Schema({
     carrier: String,
     shippingDate: Date
   },
-  shippingDocs: [{
-    type: { type: String }, // 'label', 'invoice', etc.
-    url: String
-  }],
-  
-  // Timestamps
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  },
-  closedAt: {
-    type: Date
-  }
-}, {
-  timestamps: true
-});
+  shippingDocs: [{ type: { type: String }, url: String }],
 
-// Index for search
+  closedAt: { type: Date }
+}, { timestamps: true });
+
 rfqSchema.index({ buyerId: 1, status: 1 });
 rfqSchema.index({ status: 1, createdAt: -1 });
-rfqSchema.index({ 'workpieces.technology': 1 });
-rfqSchema.index({ 'workpieces.material': 1 });
-rfqSchema.index({ 'workpieces.partType': 1 });
+rfqSchema.index({ 'pharmaProject.serviceCategory': 1 });
+rfqSchema.index({ 'pharmaProject.developmentPhase': 1 });
 rfqSchema.index({ country: 1, region: 1 });
-rfqSchema.index({ title: 'text', description: 'text' }); // Text search index
+rfqSchema.index({ title: 'text', description: 'text', 'pharmaProject.moleculeName': 'text' });
 
 module.exports = mongoose.model('RFQ', rfqSchema);
-

@@ -100,8 +100,28 @@ const userSchema = new mongoose.Schema({
   
   // Manufacturer Specific Fields
   manufacturingTypes: [{
+    type: String
+  }],
+  serviceCategories: [{
+    type: String
+  }],
+  gmpCertifications: [{
+    type: String
+  }],
+  licenseDocuments: [{
+    label: { type: String, default: '' },
+    fileUrl: { type: String, default: '' }
+  }],
+  batchScaleCapacity: {
     type: String,
-    enum: ['CNC', 'TURNING', 'MILLING', '3D_PRINTING', 'SHEET_METAL', 'DIE_CASTING', 'INJECTION_MOLDING', 'STAMPING', 'WELDING', 'ASSEMBLY', 'OTHER']
+    default: ''
+  },
+  buyerCompanyType: {
+    type: String,
+    default: ''
+  },
+  therapeuticAreas: [{
+    type: String
   }],
   companySize: {
     type: String,
@@ -123,8 +143,7 @@ const userSchema = new mongoose.Schema({
     type: String
   }],
   certifications: [{
-    type: String,
-    enum: ['ISO_9001', 'ISO_13485', 'AS9100', 'IATF_16949', 'ROHS', 'OTHER']
+    type: String
   }],
   manufacturerStatus: {
     type: String,

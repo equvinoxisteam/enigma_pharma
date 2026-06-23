@@ -41,10 +41,9 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     
     const productionFallbackOrigins = isProduction ? [
-      'https://enigma.equinoxis.com',
-      'https://enigma.equvinoxis.com',
-      'https://www.enigma.equinoxis.com',
-      'https://www.enigma.equvinoxis.com',
+      'https://enigmapharma.equvinoxis.com',
+      'https://www.enigmapharma.equvinoxis.com',
+      'https://api.enigmapharma.equvinoxis.com',
     ] : [];
 
     const allowedOrigins = [
@@ -83,14 +82,7 @@ app.use(cors(corsOptions));
 // Connect to database
 connectDB();
 
-// Check Razorpay configuration on startup
-const razorpay = require('./config/razorpay');
-if (!razorpay) {
-  console.warn('⚠️  Razorpay not configured - Payment functionality will not work');
-  console.warn('   Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env file');
-} else {
-  console.log('✅ Razorpay configured successfully');
-}
+// Razorpay disabled for Enigma Pharma — upgrades via admin approval only
 
 // Initialize admin - commented out as not needed
 // initializeAdmin();

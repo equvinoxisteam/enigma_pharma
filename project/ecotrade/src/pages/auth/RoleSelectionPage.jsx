@@ -6,23 +6,23 @@ import AuthShell from '../../components/auth/AuthShell';
 const roles = [
   {
     id: 'BUYER',
-    title: 'Buyer',
-    subtitle: 'Procurement professional',
-    description: 'Publish RFQs, discover manufacturers, and manage procurement with AI matching.',
+    title: 'Pharma Buyer',
+    subtitle: 'Sponsor / procurement',
+    description: 'Publish API and CDMO RFQs, discover verified manufacturers, and manage sourcing with NDA-gated documents.',
     accent: '#4881F8',
   },
   {
     id: 'MANUFACTURER',
-    title: 'Manufacturer',
-    subtitle: 'Production expert',
-    description: 'Browse the RFQ pool, send bids on paid plans, and grow your order book.',
+    title: 'CDMO / API Manufacturer',
+    subtitle: 'Production partner',
+    description: 'Browse pharma projects, submit bids on paid plans, and showcase GMP credentials and licenses.',
     accent: '#6366f1',
   },
   {
     id: 'HYBRID',
     title: 'Hybrid',
-    subtitle: 'Buy and manufacture',
-    description: 'Create RFQs as a buyer and respond to opportunities as a manufacturer.',
+    subtitle: 'Buy & manufacture',
+    description: 'Source APIs and CDMO services while also bidding on projects as a manufacturer.',
     accent: '#01364a',
   },
 ];
@@ -48,12 +48,12 @@ const RoleSelectionPage = () => {
   return (
     <AuthShell maxWidth={960} className="!max-w-[960px]">
       <div className="text-center mb-10">
-        <img src="/enigma-logo.svg" alt="Enigma" className="h-12 mx-auto mb-8" />
+        <img src="/enigma-logo.svg" alt="Enigma Pharma" className="h-12 mx-auto mb-8" />
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#01364a] tracking-tight mb-3">
-          Join Enigma
+          Enigma Pharma
         </h1>
         <p className="auth-muted max-w-lg mx-auto">
-          Select how you will use the platform. You can upgrade manufacturer plans anytime after signup.
+          API, CDMO, and clinical manufacturing procurement. Select your role to get started.
         </p>
       </div>
 

@@ -1,30 +1,13 @@
 const { getEffectivePlanType, PLAN_TYPES, hasFeature, FEATURE_KEYS } = require('../config/planFeatures');
 
 const SELECTED_STATUSES = [
-  'SUPPLIER_SELECTED',
-  'IN_PRODUCTION',
-  'SHIPPED',
-  'DELIVERED',
-  'CLOSED'
+  'SUPPLIER_SELECTED', 'IN_PRODUCTION', 'SHIPPED', 'DELIVERED', 'CLOSED'
 ];
 
-const isStlFile = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  const ext = url.split('?')[0].split('.').pop()?.toLowerCase();
-  return ext === 'stl';
-};
-
-const sanitizeWorkpieceForPreview = (workpiece) => {
-  const wp = workpiece?.toObject ? workpiece.toObject() : { ...workpiece };
-  wp.extraFiles = [];
-  if (!isStlFile(wp.mainFile)) {
-    wp.mainFile = '';
-  }
-  return wp;
-};
+const SENSITIVE_DOC_TYPES = ['PROCESS_DESCRIPTION', 'ANALYTICAL_METHOD', 'DMF_REFERENCE'];
 
 const maskBuyerForFree = (rfq) => ({
-  companyName: 'Enigma Buyer',
+  companyName: 'Enigma Pharma Buyer',
   country: rfq?.country || '—',
   region: rfq?.region || '—',
   industryVertical: '—'
@@ -42,11 +25,12 @@ const isSelectedSupplier = (rfq, userId) => {
     && SELECTED_STATUSES.includes(rfq.status));
 };
 
-/**
- * Before buyer accepts a supplier: STL only, no extra files.
- * Free manufacturers: masked buyer, no NDA, minimal fields.
- * Paid manufacturers: limited buyer snapshot + NDA when present.
- */
+const sanitizeDocumentsForPreview = (documents, paid) => {
+  if (!Array.isArray(documents)) return [];
+  if (!paid) return [];
+  return documents.filter((d) => !SENSITIVE_DOC_TYPES.includes(d.docType));
+};
+
 const sanitizeRfqForManufacturerView = (rfqDoc, user) => {
   const rfq = rfqDoc?.toObject ? rfqDoc.toObject() : { ...rfqDoc };
   const userId = user._id.toString();
@@ -56,19 +40,19 @@ const sanitizeRfqForManufacturerView = (rfqDoc, user) => {
   }
 
   const paid = isPaidManufacturer(user);
-
-  rfq.workpieces = (rfq.workpieces || []).map(sanitizeWorkpieceForPreview);
+  rfq.documents = sanitizeDocumentsForPreview(rfq.documents, paid);
 
   if (!paid) {
     rfq.buyerId = maskBuyerForFree(rfq);
     rfq.ndaFile = null;
     rfq.notes = null;
     rfq.requestJustification = null;
+    rfq.regulatory = { requiredGmp: rfq.regulatory?.requiredGmp || [], requiredLicenses: [], dmfReferences: '', stabilityRequired: false };
     rfq.visibilityTier = 'FREE_PREVIEW';
   } else {
     if (rfq.buyerId && typeof rfq.buyerId === 'object') {
       rfq.buyerId = {
-        companyName: rfq.buyerId.companyName || 'Buyer',
+        companyName: rfq.buyerId.companyName || 'Pharma Buyer',
         country: rfq.buyerId.country,
         region: rfq.buyerId.region || rfq.region,
         industryVertical: rfq.buyerId.industryVertical
@@ -85,14 +69,13 @@ const sanitizePoolRfq = (rfqDoc, user) => {
   return {
     ...rfq,
     description: rfq.visibilityTier === 'FREE_PREVIEW'
-      ? (rfq.description?.slice(0, 160) || 'RFQ opportunity — upgrade to view full details.')
+      ? (rfq.description?.slice(0, 160) || 'Pharma RFQ — upgrade to view full project details.')
       : rfq.description
   };
 };
 
 module.exports = {
   SELECTED_STATUSES,
-  isStlFile,
   isPaidManufacturer,
   isSelectedSupplier,
   sanitizeRfqForManufacturerView,

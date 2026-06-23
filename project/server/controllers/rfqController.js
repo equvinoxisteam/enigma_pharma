@@ -17,12 +17,22 @@ const { sanitizeRfqForManufacturerView, sanitizePoolRfq, isSelectedSupplier } = 
 // @access  Private (Buyer/Hybrid)
 const createRFQ = async (req, res) => {
   try {
-    const { title, description, workpieces, requirements, status = 'DRAFT', ndaFile, isCorporateRFQ } = req.body;
+    const {
+      title, description, status = 'DRAFT', ndaFile, isCorporateRFQ,
+      pharmaProject, documents, regulatory, requirements = {}
+    } = req.body;
     const buyerId = req.user._id;
 
-    // Validate user role
     if (req.user.userType === 'MANUFACTURER') {
-      return res.status(403).json({ message: 'Manufacturers cannot create RFQs. Only buyers and hybrid accounts can publish RFQs. Upgrade your role or use a buyer account.' });
+      return res.status(403).json({ message: 'CDMO/API manufacturers cannot create RFQs. Only pharma buyers and hybrid accounts can publish projects.' });
+    }
+
+    if (!ndaFile) {
+      return res.status(400).json({ message: 'NDA/CDA document is required for all pharma RFQs.' });
+    }
+
+    if (!pharmaProject?.serviceCategory) {
+      return res.status(400).json({ message: 'Service category is required.' });
     }
 
     const rfqData = {
@@ -30,10 +40,22 @@ const createRFQ = async (req, res) => {
       title,
       description: description || requirements?.description || '',
       status,
-      workpieces: workpieces || [],
-      ndaFile: ndaFile || '',
+      pharmaProject,
+      documents: documents || [],
+      regulatory: regulatory || {},
+      ndaFile,
       isCorporateRFQ: Boolean(isCorporateRFQ || requirements?.isCorporateRFQ),
-      ...requirements
+      preferredCurrency: requirements.preferredCurrency,
+      rfqDeadline: requirements.rfqDeadline,
+      acceptanceDeadline: requirements.acceptanceDeadline,
+      projectTrackingId: requirements.projectTrackingId || requirements.partTrackingId,
+      requestJustification: requirements.requestJustification,
+      targetDeliveryDate: requirements.targetDeliveryDate,
+      shippingTerms: requirements.shippingTerms,
+      country: requirements.country,
+      region: requirements.region,
+      communicationLanguage: requirements.communicationLanguage,
+      notes: requirements.notes
     };
 
     const rfq = await RFQ.create(rfqData);
@@ -65,7 +87,7 @@ const createRFQ = async (req, res) => {
 // @access  Private
 const getMyRFQs = async (req, res) => {
   try {
-    const { status, technology, material, country, page = 1, limit = 10 } = req.query;
+    const { status, serviceCategory, country, page = 1, limit = 10 } = req.query;
     const userId = req.user._id;
     const userType = req.user.userType;
 
@@ -92,8 +114,7 @@ const getMyRFQs = async (req, res) => {
     }
 
     if (status) query.status = status;
-    if (technology) query['workpieces.technology'] = technology;
-    if (material) query['workpieces.material'] = material;
+    if (serviceCategory) query['pharmaProject.serviceCategory'] = serviceCategory;
     if (country) query.country = country;
 
     const skip = (page - 1) * limit;
@@ -132,20 +153,12 @@ const getRFQPool = async (req, res) => {
     }
 
     const {
-      quantity,
-      technologies,
+      serviceCategory,
+      developmentPhase,
       country,
-      length,
-      width,
-      height,
-      diameter,
       region,
-      certifications,
-      companySize,
-      material,
-      machinery,
-      partType,
       keyword,
+      gmp,
       page = 1,
       limit = 20
     } = req.query;
@@ -154,50 +167,28 @@ const getRFQPool = async (req, res) => {
       status: { $in: ['OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'] }
     };
 
-    // Filter by manufacturer capabilities
-    if (technologies) {
-      const techArray = Array.isArray(technologies) ? technologies : [technologies];
-      query['workpieces.technology'] = { $in: techArray };
+    if (serviceCategory) {
+      const cats = Array.isArray(serviceCategory) ? serviceCategory : [serviceCategory];
+      query['pharmaProject.serviceCategory'] = { $in: cats };
     }
 
-    if (partType) {
-      query['workpieces.partType'] = { $regex: partType, $options: 'i' };
-    }
-
-    if (material) {
-      query['workpieces.material'] = { $regex: material, $options: 'i' };
+    if (developmentPhase) {
+      query['pharmaProject.developmentPhase'] = developmentPhase;
     }
 
     if (country) query.country = { $regex: country, $options: 'i' };
     if (region) query.region = { $regex: region, $options: 'i' };
 
-    // Dimension filters using $elemMatch
-    if (length || diameter || height || width) {
-      const dimensionQuery = {};
-      if (length) dimensionQuery['dimensions.length'] = { $lte: parseFloat(length) };
-      if (diameter) dimensionQuery['dimensions.diameter'] = { $lte: parseFloat(diameter) };
-      if (height) dimensionQuery['dimensions.height'] = { $lte: parseFloat(height) };
-      if (width) dimensionQuery['dimensions.width'] = { $lte: parseFloat(width) };
-      
-      if (Object.keys(dimensionQuery).length > 0) {
-        query['workpieces'] = { $elemMatch: dimensionQuery };
-      }
-    }
-
-    if (quantity) {
-      query['workpieces.quantity'] = { $gte: parseInt(quantity) };
-    }
-
-    if (certifications) {
-      const certArray = Array.isArray(certifications) ? certifications : [certifications];
-      query.requiredCertificates = { $in: certArray };
+    if (gmp) {
+      const gmpArr = Array.isArray(gmp) ? gmp : [gmp];
+      query['regulatory.requiredGmp'] = { $in: gmpArr };
     }
 
     if (keyword) {
       query.$or = [
         { title: { $regex: keyword, $options: 'i' } },
         { description: { $regex: keyword, $options: 'i' } },
-        { requestJustification: { $regex: keyword, $options: 'i' } }
+        { 'pharmaProject.moleculeName': { $regex: keyword, $options: 'i' } }
       ];
     }
 
@@ -234,42 +225,24 @@ const getRFQPool = async (req, res) => {
         let score = 0;
         const manufacturer = req.user;
 
-        // Technology match
-        if (manufacturer.manufacturingTypes && rfq.workpieces[0]?.technology) {
-          if (manufacturer.manufacturingTypes.includes(rfq.workpieces[0].technology)) {
-            score += 30;
-          }
-        }
+        const mfrCategories = manufacturer.serviceCategories?.length
+          ? manufacturer.serviceCategories
+          : (manufacturer.manufacturingTypes || []);
+        const rfqCat = rfq.pharmaProject?.serviceCategory;
 
-        // Material match
-        if (manufacturer.primaryMaterials && rfq.workpieces[0]?.material) {
-          if (manufacturer.primaryMaterials.includes(rfq.workpieces[0].material)) {
-            score += 20;
-          }
-        }
+        if (rfqCat && mfrCategories.includes(rfqCat)) score += 35;
 
-        // Certification match
-        if (manufacturer.certifications && rfq.requiredCertificates) {
-          const matchingCerts = manufacturer.certifications.filter(cert =>
-            rfq.requiredCertificates.includes(cert)
-          );
-          score += matchingCerts.length * 10;
-        }
+        const mfrGmp = manufacturer.gmpCertifications?.length
+          ? manufacturer.gmpCertifications
+          : (manufacturer.certifications || []);
+        const requiredGmp = rfq.regulatory?.requiredGmp || [];
+        const gmpMatch = mfrGmp.filter((c) => requiredGmp.includes(c));
+        score += gmpMatch.length * 15;
 
-        // Dimension match
-        if (manufacturer.maxDimensions && rfq.workpieces[0]?.dimensions) {
-          const dims = rfq.workpieces[0].dimensions;
-          const maxDims = manufacturer.maxDimensions;
-          if (dims.length <= maxDims.length && dims.width <= maxDims.width && dims.height <= maxDims.height) {
-            score += 20;
-          }
-        }
+        if (manufacturer.country && rfq.country && manufacturer.country === rfq.country) score += 15;
 
-        // Region match
         if (manufacturer.manufacturerSettings?.regionsServed && rfq.region) {
-          if (manufacturer.manufacturerSettings.regionsServed.includes(rfq.region)) {
-            score += 10;
-          }
+          if (manufacturer.manufacturerSettings.regionsServed.includes(rfq.region)) score += 10;
         }
 
         return {

@@ -10,7 +10,7 @@ const sanitizePublicManufacturerProfile = (userDoc) => {
     return {
       ...user,
       planType: plan,
-      companyName: 'Enigma Manufacturer',
+      companyName: 'Enigma Pharma Partner',
       fullName: 'Enigma Manufacturer',
       companyLogo: '',
       companyBanner: '',

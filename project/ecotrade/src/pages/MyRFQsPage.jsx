@@ -4,7 +4,7 @@ import { rfqAPI } from '../api/rfqAPI';
 import { useToast } from '../contexts/ToastContext';
 import { FileText, Search, Clock, CheckCircle, Pencil, MapPin, Globe, Trash2 } from 'lucide-react';
 import { RFQFilesList } from '../components/RFQDetailsPanel';
-import { SERVICE_CATEGORY_LABELS } from '../config/pharmaTaxonomy';
+import { SERVICE_CATEGORY_LABELS, SERVICE_CATEGORIES, GMP_LABELS } from '../config/pharmaTaxonomy';
 
 const MyRFQsPage = () => {
   const navigate = useNavigate();
@@ -13,8 +13,7 @@ const MyRFQsPage = () => {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     status: '',
-    technology: '',
-    material: '',
+    serviceCategory: '',
     country: '',
     keyword: ''
   });
@@ -139,20 +138,23 @@ const MyRFQsPage = () => {
             </select>
           </div>
           <div>
-            <input
-              type="text"
-              placeholder="Technology"
-              value={filters.technology}
-              onChange={(e) => handleFilterChange('technology', e.target.value)}
+            <select
+              value={filters.serviceCategory}
+              onChange={(e) => handleFilterChange('serviceCategory', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
-            />
+            >
+              <option value="">All Service Categories</option>
+              {SERVICE_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>{SERVICE_CATEGORY_LABELS[cat] || cat}</option>
+              ))}
+            </select>
           </div>
           <div>
             <input
               type="text"
-              placeholder="Material"
-              value={filters.material}
-              onChange={(e) => handleFilterChange('material', e.target.value)}
+              placeholder="Country"
+              value={filters.country}
+              onChange={(e) => handleFilterChange('country', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
             />
           </div>
@@ -286,11 +288,11 @@ const MyRFQsPage = () => {
                     )}
                   </div>
 
-                  {rfq.requiredCertificates?.length > 0 && (
+                  {(rfq.regulatory?.requiredGmp || []).length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
-                      {rfq.requiredCertificates.map((cert) => (
+                      {rfq.regulatory.requiredGmp.map((cert) => (
                         <span key={cert} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full font-medium">
-                          {cert.replace(/_/g, ' ')}
+                          {GMP_LABELS[cert] || cert.replace(/_/g, ' ')}
                         </span>
                       ))}
                     </div>

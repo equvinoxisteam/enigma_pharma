@@ -9,6 +9,15 @@ import { countries } from '../data/countries';
 import AuthenticatedImage from '../components/AuthenticatedImage';
 import OtherTextInput from '../components/ui/OtherTextInput';
 import { resolveOtherInArray, resolveTechnologiesWithOther, otherArrayRequiredError } from '../utils/otherOption';
+import {
+  SERVICE_CATEGORIES,
+  SERVICE_CATEGORY_LABELS,
+  GMP_CERTIFICATIONS,
+  GMP_LABELS,
+  THERAPEUTIC_AREAS,
+  BATCH_SCALES,
+  BATCH_SCALE_LABELS
+} from '../config/pharmaTaxonomy';
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
@@ -55,6 +64,9 @@ const ProfilePage = () => {
     },
     primaryMaterials: [],
     certifications: [],
+    gmpCertifications: [],
+    therapeuticAreas: [],
+    batchScaleCapacity: '',
     otherTechnologyText: '',
     otherCertificationText: '',
     maxDimensions: {
@@ -90,7 +102,11 @@ const ProfilePage = () => {
           companySize: profile.companySize || '',
           gstNumber: profile.gstNumber || '',
           industryVertical: profile.industryVertical || '',
-          manufacturingTypes: profile.manufacturingTypes || [],
+          manufacturingTypes: profile.serviceCategories || profile.manufacturingTypes || [],
+          certifications: profile.gmpCertifications || profile.certifications || [],
+          gmpCertifications: profile.gmpCertifications || profile.certifications || [],
+          therapeuticAreas: profile.therapeuticAreas || [],
+          batchScaleCapacity: profile.batchScaleCapacity || '',
           yearsInBusiness: profile.yearsInBusiness || 0,
           annualSpending: profile.annualSpending || '',
           procurementTeamSize: profile.procurementTeamSize || '',
@@ -113,7 +129,6 @@ const ProfilePage = () => {
             languages: profile.manufacturerSettings?.languages || ['English']
           },
           primaryMaterials: profile.primaryMaterials || [],
-          certifications: profile.certifications || [],
           maxDimensions: profile.maxDimensions || { height: 0, width: 0, length: 0 }
         });
       } catch (error) {
@@ -137,7 +152,7 @@ const ProfilePage = () => {
         companySize: user.companySize || '',
         gstNumber: user.gstNumber || '',
         industryVertical: user.industryVertical || '',
-        manufacturingTypes: user.manufacturingTypes || [],
+        manufacturingTypes: user.serviceCategories || user.manufacturingTypes || [],
         yearsInBusiness: user.yearsInBusiness || 0,
         annualSpending: user.annualSpending || '',
         procurementTeamSize: user.procurementTeamSize || '',
@@ -160,7 +175,10 @@ const ProfilePage = () => {
           languages: user.manufacturerSettings?.languages || ['English']
         },
         primaryMaterials: user.primaryMaterials || [],
-        certifications: user.certifications || [],
+        certifications: user.gmpCertifications || user.certifications || [],
+        gmpCertifications: user.gmpCertifications || user.certifications || [],
+        therapeuticAreas: user.therapeuticAreas || [],
+        batchScaleCapacity: user.batchScaleCapacity || '',
         otherTechnologyText: '',
         otherCertificationText: '',
         maxDimensions: user.maxDimensions || { height: 0, width: 0, length: 0 }
@@ -218,10 +236,10 @@ const ProfilePage = () => {
       return;
     }
     const certErr = otherArrayRequiredError(
-      formData.certifications,
+      formData.gmpCertifications,
       formData.otherCertificationText,
       ['OTHER'],
-      'certification'
+      'GMP certification'
     );
     if (certErr) {
       showError(certErr);
@@ -237,15 +255,18 @@ const ProfilePage = () => {
         profilePayload.otherTechnologyText
       );
       profilePayload.manufacturingTypes = resolvedTechnologies;
+      profilePayload.serviceCategories = resolvedTechnologies;
       profilePayload.manufacturerSettings = {
         ...profilePayload.manufacturerSettings,
         technologies: resolvedTechnologies,
       };
-      profilePayload.certifications = resolveOtherInArray(
-        profilePayload.certifications,
+      const resolvedGmp = resolveOtherInArray(
+        profilePayload.gmpCertifications,
         profilePayload.otherCertificationText,
         ['OTHER']
       );
+      profilePayload.gmpCertifications = resolvedGmp;
+      profilePayload.certifications = resolvedGmp;
       delete profilePayload.otherTechnologyText;
       delete profilePayload.otherCertificationText;
 
@@ -302,11 +323,11 @@ const ProfilePage = () => {
   const tabs = [
     { id: 'company', label: 'Company', icon: Building2, show: true },
     { id: 'buyer', label: 'Buyer Settings', icon: ShoppingCart, show: isBuyer },
-    { id: 'manufacturer', label: 'Manufacturer Settings', icon: Factory, show: isManufacturer }
+    { id: 'manufacturer', label: 'CDMO / Manufacturer Settings', icon: Factory, show: isManufacturer }
   ].filter(tab => tab.show);
 
-  const technologyOptions = ['CNC', 'TURNING', 'MILLING', '3D_PRINTING', 'SHEET_METAL', 'DIE_CASTING', 'INJECTION_MOLDING', 'STAMPING', 'WELDING', 'ASSEMBLY', 'OTHER'];
-  const certificationOptions = ['ISO_9001', 'ISO_13485', 'AS9100', 'IATF_16949', 'ROHS', 'OTHER'];
+  const serviceCategoryOptions = SERVICE_CATEGORIES;
+  const certificationOptions = GMP_CERTIFICATIONS;
   const currencyOptions = ['USD', 'EUR', 'GBP', 'INR', 'CNY'];
   const incotermsOptions = ['FOB', 'CIF', 'EXW', 'DDP', 'DAP', 'FCA'];
 
@@ -682,10 +703,10 @@ const ProfilePage = () => {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Technologies
+                Service Categories
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {technologyOptions.map((tech) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {serviceCategoryOptions.map((tech) => (
                   <label key={tech} className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -703,7 +724,7 @@ const ProfilePage = () => {
                       }}
                       className="w-4 h-4 text-[#4881F8] border-gray-300 rounded focus:ring-[#4881F8]"
                     />
-                    <span className="text-sm text-gray-700">{tech.replace('_', ' ')}</span>
+                    <span className="text-sm text-gray-700">{SERVICE_CATEGORY_LABELS[tech] || tech.replace(/_/g, ' ')}</span>
                   </label>
                 ))}
               </div>
@@ -711,7 +732,7 @@ const ProfilePage = () => {
                 show={(formData.manufacturerSettings.technologies || []).includes('OTHER')}
                 value={formData.otherTechnologyText}
                 onChange={(value) => setFormData((prev) => ({ ...prev, otherTechnologyText: value }))}
-                placeholder="Specify technology"
+                placeholder="Specify other service category"
                 className="w-full mt-3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
               />
             </div>
@@ -729,140 +750,67 @@ const ProfilePage = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Batch Scale Capacity
+                </label>
+                <select
+                  name="batchScaleCapacity"
+                  value={formData.batchScaleCapacity}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
+                >
+                  <option value="">Select batch scale</option>
+                  {BATCH_SCALES.map((scale) => (
+                    <option key={scale} value={scale}>{BATCH_SCALE_LABELS[scale] || scale}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Primary Materials
+                Therapeutic Areas
               </label>
-              <input
-                key={`materials-${formData.manufacturerSettings.materials?.join('|')}`}
-                type="text"
-                placeholder="Enter materials separated by commas"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
-                defaultValue={formData.manufacturerSettings.materials?.join(', ') || ''}
-                onBlur={(e) => {
-                  const materials = e.target.value.split(',').map(m => m.trim()).filter(Boolean);
-                  setFormData(prev => ({
-                    ...prev,
-                    manufacturerSettings: { ...prev.manufacturerSettings, materials },
-                    primaryMaterials: materials
-                  }));
-                }}
-              />
-              <p className="text-xs text-gray-500 mt-1">e.g., Aluminum, Steel, Plastic, Titanium</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {THERAPEUTIC_AREAS.map((area) => (
+                  <label key={area} className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={(formData.therapeuticAreas || []).includes(area)}
+                      onChange={(e) => handleArrayChange('therapeuticAreas', area, e.target.checked)}
+                      className="w-4 h-4 text-[#4881F8] border-gray-300 rounded focus:ring-[#4881F8]"
+                    />
+                    <span className="text-sm text-gray-700">{area}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Part Types
-              </label>
-              <input
-                key={`partTypes-${formData.manufacturerSettings.partTypes?.join('|')}`}
-                type="text"
-                placeholder="Enter part types separated by commas"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
-                defaultValue={formData.manufacturerSettings.partTypes?.join(', ') || ''}
-                onBlur={(e) => {
-                  const partTypes = e.target.value.split(',').map(p => p.trim()).filter(Boolean);
-                  setFormData(prev => ({
-                    ...prev,
-                    manufacturerSettings: { ...prev.manufacturerSettings, partTypes }
-                  }));
-                }}
-              />
-              <p className="text-xs text-gray-500 mt-1">e.g., Gear, Pipe, Bracket, Housing</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Machinery
-              </label>
-              <input
-                key={`machinery-${formData.manufacturerSettings.machinery?.join('|')}`}
-                type="text"
-                placeholder="Enter machinery separated by commas"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
-                defaultValue={formData.manufacturerSettings.machinery?.join(', ') || ''}
-                onBlur={(e) => {
-                  const machinery = e.target.value.split(',').map(m => m.trim()).filter(Boolean);
-                  setFormData(prev => ({
-                    ...prev,
-                    manufacturerSettings: { ...prev.manufacturerSettings, machinery }
-                  }));
-                }}
-              />
-              <p className="text-xs text-gray-500 mt-1">e.g., Metrology machines, 5-axis CNC, Laser Cutter</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Certifications
+                GMP Certifications
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {certificationOptions.map((cert) => (
                   <label key={cert} className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={formData.certifications.includes(cert)}
-                      onChange={(e) => handleArrayChange('certifications', cert, e.target.checked)}
+                      checked={(formData.gmpCertifications || []).includes(cert)}
+                      onChange={(e) => handleArrayChange('gmpCertifications', cert, e.target.checked)}
                       className="w-4 h-4 text-[#4881F8] border-gray-300 rounded focus:ring-[#4881F8]"
                     />
-                    <span className="text-sm text-gray-700">{cert.replace('_', ' ')}</span>
+                    <span className="text-sm text-gray-700">{GMP_LABELS[cert] || cert.replace(/_/g, ' ')}</span>
                   </label>
                 ))}
               </div>
               <OtherTextInput
-                show={formData.certifications.includes('OTHER')}
+                show={(formData.gmpCertifications || []).includes('OTHER')}
                 value={formData.otherCertificationText}
                 onChange={(value) => setFormData((prev) => ({ ...prev, otherCertificationText: value }))}
-                placeholder="Specify certification"
+                placeholder="Specify other GMP certification"
                 className="w-full mt-3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Max Part Dimensions (mm)
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Length</label>
-                  <input
-                    type="number"
-                    value={formData.maxDimensions.length}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      maxDimensions: { ...prev.maxDimensions, length: parseFloat(e.target.value) || 0 }
-                    }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Width</label>
-                  <input
-                    type="number"
-                    value={formData.maxDimensions.width}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      maxDimensions: { ...prev.maxDimensions, width: parseFloat(e.target.value) || 0 }
-                    }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Height</label>
-                  <input
-                    type="number"
-                    value={formData.maxDimensions.height}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      maxDimensions: { ...prev.maxDimensions, height: parseFloat(e.target.value) || 0 }
-                    }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
-                  />
-                </div>
-              </div>
             </div>
           </div>
         )}

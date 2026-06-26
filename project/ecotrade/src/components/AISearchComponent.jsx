@@ -133,7 +133,7 @@ const AISearchModal = ({ onClose }) => {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Find manufacturers by tech, material..."
+                  placeholder="Find CDMO partners by service category, GMP, molecule..."
                   className="w-full pl-12 sm:pl-16 pr-4 sm:pr-36 py-4 sm:py-6 bg-gray-50 border-2 border-transparent focus:border-[#4881F8] focus:bg-white rounded-2xl sm:rounded-[1.8rem] text-base sm:text-xl lg:text-2xl outline-none transition-all font-bold tracking-tight shadow-inner"
                 />
                 <div className="hidden sm:block absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
@@ -162,13 +162,13 @@ const AISearchModal = ({ onClose }) => {
                 ref={fileInputRef} 
                 onChange={handleFileUpload} 
                 className="hidden" 
-                accept=".stl,.obj,.step"
+                accept=".pdf,.doc,.docx"
               />
               {isUploading ? (
                 <div className="flex flex-col items-center gap-4 animate-in fade-in">
                   <Loader2 className="animate-spin text-[#4881F8]" size={64} />
                   <div>
-                    <p className="text-xl font-black text-[#01364a]">Analyzing Geometry...</p>
+                    <p className="text-xl font-black text-[#01364a]">Analyzing document...</p>
                     <p className="text-sm text-gray-500 font-bold">Matching service category and GMP requirements</p>
                   </div>
                 </div>
@@ -199,7 +199,7 @@ const AISearchModal = ({ onClose }) => {
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-[#01364a] tracking-tight">Smart Matches for You</h3>
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Based on your factory profile</p>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Based on your CDMO profile</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -219,7 +219,7 @@ const AISearchModal = ({ onClose }) => {
                           {rfq.pharmaProject?.serviceCategory?.replace(/_/g, ' ') || 'Pharma RFQ'}
                         </span>
                         <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-wider rounded-lg border border-blue-100">
-                          {rfq.workpieces?.[0]?.material || 'Steel'}
+                          {rfq.pharmaProject?.developmentPhase?.replace(/_/g, ' ') || rfq.country || 'Pharma'}
                         </span>
                       </div>
                     </Link>

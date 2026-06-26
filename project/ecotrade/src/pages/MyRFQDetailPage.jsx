@@ -384,22 +384,22 @@ const MyRFQDetailPage = () => {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {canEdit && !isEditing && !isPharma && (
-              <>
-                <button
-                  onClick={handleStartEdit}
-                  className="flex items-center gap-2 px-4 py-2 border border-[#4881F8] text-[#4881F8] rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  <Pencil size={18} />
-                  Edit RFQ
-                </button>
-                <button
-                  onClick={handleDeleteRFQ}
-                  className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 size={18} />
-                  Delete
-                </button>
-              </>
+              <button
+                onClick={handleStartEdit}
+                className="flex items-center gap-2 px-4 py-2 border border-[#4881F8] text-[#4881F8] rounded-lg hover:bg-blue-50 transition-colors"
+              >
+                <Pencil size={18} />
+                Edit RFQ
+              </button>
+            )}
+            {canEdit && !isEditing && (
+              <button
+                onClick={handleDeleteRFQ}
+                className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <Trash2 size={18} />
+                Delete
+              </button>
             )}
             {isEditing && (
               <>
@@ -720,11 +720,11 @@ const MyRFQDetailPage = () => {
                   </div>
                 )}
 
-                {rfq.requiredCertificates?.length > 0 && (
+                {((rfq.regulatory?.requiredGmp || rfq.requiredCertificates || []).length > 0) && (
                   <div>
-                    <h4 className="font-semibold mb-2 text-gray-800">Required Certificates</h4>
+                    <h4 className="font-semibold mb-2 text-gray-800">Required GMP Certifications</h4>
                     <div className="flex flex-wrap gap-2">
-                      {rfq.requiredCertificates.map((cert) => (
+                      {(rfq.regulatory?.requiredGmp || rfq.requiredCertificates || []).map((cert) => (
                         <span key={cert} className="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full font-medium">
                           {cert.replace(/_/g, ' ')}
                         </span>

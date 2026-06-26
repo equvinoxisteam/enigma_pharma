@@ -22,83 +22,54 @@ const searchRFQsController = async (req, res) => {
   try {
     const {
       keyword,
-      partType,
-      technologies,
+      serviceCategory,
+      developmentPhase,
       country,
       region,
       certifications,
-      length,
-      diameter,
-      height,
-      width,
-      material,
-      quantity,
+      therapeuticArea,
       page = 1,
       limit = 20
     } = req.query;
 
-    // Build query
     const query = {
       status: { $in: ['OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'] },
       buyerId: { $ne: req.user._id }
     };
 
-    // Text search on title and description
     if (keyword) {
       query.$or = [
         { title: { $regex: keyword, $options: 'i' } },
-        { description: { $regex: keyword, $options: 'i' } }
+        { description: { $regex: keyword, $options: 'i' } },
+        { 'pharmaProject.moleculeName': { $regex: keyword, $options: 'i' } },
+        { 'pharmaProject.therapeuticArea': { $regex: keyword, $options: 'i' } }
       ];
     }
 
-    // Part type filter
-    if (partType) {
-      query['workpieces.partType'] = { $regex: partType, $options: 'i' };
+    if (serviceCategory) {
+      const cats = Array.isArray(serviceCategory) ? serviceCategory : [serviceCategory];
+      query['pharmaProject.serviceCategory'] = { $in: cats };
     }
 
-    // Technologies filter
-    if (technologies) {
-      const techArray = Array.isArray(technologies) ? technologies : [technologies];
-      query['workpieces.technology'] = { $in: techArray };
+    if (developmentPhase) {
+      query['pharmaProject.developmentPhase'] = developmentPhase;
     }
 
-    // Country filter
     if (country) {
       query.country = { $regex: country, $options: 'i' };
     }
 
-    // Region filter
     if (region) {
       query.region = { $regex: region, $options: 'i' };
     }
 
-    // Certifications filter
     if (certifications) {
       const certArray = Array.isArray(certifications) ? certifications : [certifications];
-      query.requiredCertificates = { $in: certArray };
+      query['regulatory.requiredGmp'] = { $in: certArray };
     }
 
-    // Dimension filters - use $elemMatch to ensure all conditions match on the same workpiece
-    if (length || diameter || height || width) {
-      const dimensionQuery = {};
-      if (length) dimensionQuery['dimensions.length'] = { $lte: parseFloat(length) };
-      if (diameter) dimensionQuery['dimensions.diameter'] = { $lte: parseFloat(diameter) };
-      if (height) dimensionQuery['dimensions.height'] = { $lte: parseFloat(height) };
-      if (width) dimensionQuery['dimensions.width'] = { $lte: parseFloat(width) };
-      
-      if (Object.keys(dimensionQuery).length > 0) {
-        query['workpieces'] = { $elemMatch: dimensionQuery };
-      }
-    }
-
-    // Material filter
-    if (material) {
-      query['workpieces.material'] = { $regex: material, $options: 'i' };
-    }
-
-    // Quantity filter
-    if (quantity) {
-      query['workpieces.quantity'] = { $gte: parseInt(quantity) };
+    if (therapeuticArea) {
+      query['pharmaProject.therapeuticArea'] = { $regex: therapeuticArea, $options: 'i' };
     }
 
     // Pagination
@@ -141,72 +112,80 @@ const searchManufacturersController = async (req, res) => {
   try {
     const {
       keyword,
-      partType,
+      serviceCategory,
       technologies,
       country,
       region,
       certifications,
       companySize,
-      material,
-      machinery,
+      therapeuticArea,
       page = 1,
       limit = 20
     } = req.query;
 
-    // Build query
     const query = {
       userType: { $in: ['MANUFACTURER', 'HYBRID'] },
       manufacturerStatus: 'ACTIVE'
     };
+    const andFilters = [];
 
-    // Text search on company name and full name
     if (keyword) {
-      query.$or = [
-        { companyName: { $regex: keyword, $options: 'i' } },
-        { fullName: { $regex: keyword, $options: 'i' } }
-      ];
+      andFilters.push({
+        $or: [
+          { companyName: { $regex: keyword, $options: 'i' } },
+          { fullName: { $regex: keyword, $options: 'i' } }
+        ]
+      });
     }
 
-    // Part type filter (in manufacturerSettings.partTypes)
-    if (partType) {
-      query['manufacturerSettings.partTypes'] = { $regex: partType, $options: 'i' };
-    }
-
-    // Technologies filter
-    if (technologies) {
+    if (serviceCategory) {
+      const cats = Array.isArray(serviceCategory) ? serviceCategory : [serviceCategory];
+      andFilters.push({
+        $or: [
+          { serviceCategories: { $in: cats } },
+          { manufacturingTypes: { $in: cats } },
+          { 'manufacturerSettings.technologies': { $in: cats } }
+        ]
+      });
+    } else if (technologies) {
       const techArray = Array.isArray(technologies) ? technologies : [technologies];
-      query['manufacturerSettings.technologies'] = { $in: techArray };
+      andFilters.push({
+        $or: [
+          { serviceCategories: { $in: techArray } },
+          { manufacturingTypes: { $in: techArray } },
+          { 'manufacturerSettings.technologies': { $in: techArray } }
+        ]
+      });
     }
 
-    // Country filter
     if (country) {
       query.country = { $regex: country, $options: 'i' };
     }
 
-    // Region filter
     if (region) {
       query.region = { $regex: region, $options: 'i' };
     }
 
-    // Certifications filter
     if (certifications) {
       const certArray = Array.isArray(certifications) ? certifications : [certifications];
-      query.certifications = { $in: certArray };
+      andFilters.push({
+        $or: [
+          { gmpCertifications: { $in: certArray } },
+          { certifications: { $in: certArray } }
+        ]
+      });
     }
 
-    // Company size filter
     if (companySize) {
       query.companySize = { $regex: companySize, $options: 'i' };
     }
 
-    // Material filter
-    if (material) {
-      query['manufacturerSettings.materials'] = { $regex: material, $options: 'i' };
+    if (therapeuticArea) {
+      query.therapeuticAreas = { $regex: therapeuticArea, $options: 'i' };
     }
 
-    // Machinery filter
-    if (machinery) {
-      query['manufacturerSettings.machinery'] = { $regex: machinery, $options: 'i' };
+    if (andFilters.length > 0) {
+      query.$and = andFilters;
     }
 
     // Pagination
@@ -375,7 +354,7 @@ const aiSearchController = async (req, res) => {
         { serviceCategories: { $regex: query, $options: 'i' } },
         { manufacturingTypes: { $regex: query, $options: 'i' } },
         { gmpCertifications: { $regex: query, $options: 'i' } },
-        { 'pharmaProfile.therapeuticFocus': { $regex: query, $options: 'i' } }
+        { therapeuticAreas: { $regex: query, $options: 'i' } }
       ]
     };
     if (detectedCategories.length > 0) {

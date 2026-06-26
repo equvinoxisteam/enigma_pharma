@@ -15,7 +15,8 @@ const QuickRegister = () => {
     city: 'Mumbai',
     state: 'Maharashtra',
     zipCode: '400001',
-    manufacturingTypes: ['CNC']
+    manufacturingTypes: ['API_MANUFACTURING'],
+    serviceCategories: ['API_MANUFACTURING']
   });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);

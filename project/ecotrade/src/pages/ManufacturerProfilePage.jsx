@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, MapPin, Star, Shield, Factory, CheckCircle, Mail
 import { profileAPI } from '../api/profileAPI';
 import { hasFeature, FEATURE_KEYS, PLAN_TYPES, getEffectivePlanType } from '../config/planFeatures';
 import { normalizeFileUrl } from '../utils/fileUtils';
+import { SERVICE_CATEGORY_LABELS, GMP_LABELS, BATCH_SCALE_LABELS } from '../config/pharmaTaxonomy';
 import AuthenticatedImage from '../components/AuthenticatedImage';
 
 const ManufacturerProfilePage = () => {
@@ -41,10 +42,11 @@ const ManufacturerProfilePage = () => {
           companyPresentationUrl: isFree ? '' : (profile.companyPresentationUrl || ''),
           companyBrochurePdfUrl: isFree ? '' : (profile.companyBrochurePdfUrl || ''),
           companyProfilePdfUrl: isFree ? '' : (profile.companyProfilePdfUrl || ''),
-          materials: isFree ? [] : (profile?.manufacturerSettings?.materials || profile?.primaryMaterials || []),
-          machinery: isFree ? [] : (profile?.manufacturerSettings?.machinery || []),
-          manufacturingTypes: isFree ? [] : (profile?.manufacturerSettings?.technologies || profile?.manufacturingTypes || []),
-          certifications: isFree ? [] : (profile?.certifications || []),
+          serviceCategories: isFree ? [] : (profile?.serviceCategories || profile?.manufacturerSettings?.technologies || profile?.manufacturingTypes || []),
+          therapeuticAreas: isFree ? [] : (profile?.therapeuticAreas || []),
+          batchScaleCapacity: isFree ? '' : (profile?.batchScaleCapacity || ''),
+          gmpCertifications: isFree ? [] : (profile?.gmpCertifications || profile?.certifications || []),
+          certifications: isFree ? [] : (profile?.gmpCertifications || profile?.certifications || []),
           website: profile?.website || ''
         });
       } catch (error) {
@@ -238,43 +240,42 @@ const ManufacturerProfilePage = () => {
 
           {!manufacturer.isFree && (
           <section className="bg-white border border-gray-100 rounded-2xl sm:rounded-[3rem] p-5 sm:p-8 lg:p-10 shadow-2xl shadow-blue-900/5">
-             <h2 className="text-2xl font-black text-[#01364a] mb-8">Technical Proficiency</h2>
+             <h2 className="text-2xl font-black text-[#01364a] mb-8">CDMO Capabilities</h2>
              
              <div className="mb-8">
-               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Core Technologies</h3>
+               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Service Categories</h3>
                <div className="flex flex-wrap gap-3">
-                 {manufacturer.manufacturingTypes.map((tech, i) => (
+                 {(manufacturer.serviceCategories || []).map((tech, i) => (
                    <span key={i} className="px-6 py-3 bg-blue-50 text-[#01364a] font-black rounded-2xl text-sm border border-blue-100 hover:scale-105 transition-transform">
-                     {tech.replace('_', ' ')}
+                     {SERVICE_CATEGORY_LABELS[tech] || String(tech).replace(/_/g, ' ')}
                    </span>
                  ))}
                </div>
              </div>
 
+             {manufacturer.therapeuticAreas?.length > 0 && (
              <div className="mb-8">
-               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Materials Expertise</h3>
+               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Therapeutic Areas</h3>
                <div className="flex flex-wrap gap-2">
-                 {manufacturer.materials.map((mat, i) => (
+                 {manufacturer.therapeuticAreas.map((area, i) => (
                    <span key={i} className="px-4 py-2 bg-gray-50 text-gray-600 font-bold rounded-xl text-sm border border-gray-100">
-                     {mat}
+                     {area}
                    </span>
                  ))}
                </div>
              </div>
+             )}
 
+             {manufacturer.batchScaleCapacity && (
              <div>
                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                 <Settings size={16} /> Production Machinery
+                 <Settings size={16} /> Batch Scale Capacity
                </h3>
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 {manufacturer.machinery.map((mach, i) => (
-                   <div key={i} className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl font-bold text-[#01364a]">
-                     <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                     {mach}
-                   </div>
-                 ))}
-               </div>
+               <p className="p-4 bg-gray-50 rounded-2xl font-bold text-[#01364a]">
+                 {BATCH_SCALE_LABELS[manufacturer.batchScaleCapacity] || manufacturer.batchScaleCapacity}
+               </p>
              </div>
+             )}
           </section>
           )}
 
@@ -310,13 +311,13 @@ const ManufacturerProfilePage = () => {
                 Compliance
               </h2>
               <div className="space-y-4">
-                {(manufacturer.certifications || []).map((c, i) => (
+                {(manufacturer.gmpCertifications || []).map((c, i) => (
                   <div key={i} className="flex items-center gap-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
                     <Shield size={20} className="text-emerald-500 fill-emerald-500/10" />
-                    <span className="font-black text-emerald-800 text-sm tracking-tight">{c.replace('_', ' ')}</span>
+                    <span className="font-black text-emerald-800 text-sm tracking-tight">{GMP_LABELS[c] || c.replace(/_/g, ' ')}</span>
                   </div>
                 ))}
-                {(manufacturer.certifications || []).length === 0 && (
+                {(manufacturer.gmpCertifications || []).length === 0 && (
                   <p className="text-center py-6 text-gray-400 font-bold italic">No public certs listed</p>
                 )}
               </div>

@@ -118,7 +118,16 @@ const updateProfile = async (req, res) => {
 
     // Update manufacturer profile fields
     if (primaryMaterials !== undefined) user.primaryMaterials = primaryMaterials;
-    if (certifications !== undefined) user.certifications = certifications;
+    if (certifications !== undefined) {
+      user.certifications = certifications;
+      user.gmpCertifications = certifications;
+    }
+    if (req.body.gmpCertifications !== undefined) {
+      user.gmpCertifications = req.body.gmpCertifications;
+      user.certifications = req.body.gmpCertifications;
+    }
+    if (req.body.therapeuticAreas !== undefined) user.therapeuticAreas = req.body.therapeuticAreas;
+    if (req.body.batchScaleCapacity !== undefined) user.batchScaleCapacity = req.body.batchScaleCapacity;
     if (maxDimensions !== undefined) user.maxDimensions = maxDimensions;
 
     // Calculate profile completeness
@@ -139,10 +148,10 @@ const updateProfile = async (req, res) => {
     }
 
     if (user.userType === 'MANUFACTURER' || user.userType === 'HYBRID') {
-      if (user.manufacturingTypes?.length > 0) completeness += 10;
-      if (user.primaryMaterials?.length > 0) completeness += 10;
-      if (user.certifications?.length > 0) completeness += 10;
-      if (user.maxDimensions?.length > 0 || user.maxDimensions?.width > 0) completeness += 10;
+      if (user.serviceCategories?.length > 0 || user.manufacturingTypes?.length > 0) completeness += 15;
+      if (user.gmpCertifications?.length > 0 || user.certifications?.length > 0) completeness += 15;
+      if (user.therapeuticAreas?.length > 0) completeness += 10;
+      if (user.batchScaleCapacity) completeness += 5;
       if (user.description) completeness += 5;
       if (user.facilityPhotos?.length > 0) completeness += 5;
     }

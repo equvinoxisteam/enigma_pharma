@@ -63,11 +63,10 @@ const getManufacturerAnalytics = async (userId, range) => {
   const byTechnology = {};
   const byRegion = {};
   wonRfqs.forEach((rfq) => {
-    rfq.workpieces?.forEach((wp) => {
-      if (wp.technology) {
-        byTechnology[wp.technology] = (byTechnology[wp.technology] || 0) + 1;
-      }
-    });
+    const cat = rfq.pharmaProject?.serviceCategory;
+    if (cat) {
+      byTechnology[cat] = (byTechnology[cat] || 0) + 1;
+    }
     const regionLabel = rfq.region || rfq.country || 'Unknown';
     byRegion[regionLabel] = (byRegion[regionLabel] || 0) + 1;
   });
@@ -118,11 +117,10 @@ const getBuyerAnalytics = async (userId, range) => {
   const byTechnology = {};
   const byRegion = {};
   rfqs.forEach((rfq) => {
-    rfq.workpieces?.forEach((wp) => {
-      if (wp.technology) {
-        byTechnology[wp.technology] = (byTechnology[wp.technology] || 0) + 1;
-      }
-    });
+    const cat = rfq.pharmaProject?.serviceCategory;
+    if (cat) {
+      byTechnology[cat] = (byTechnology[cat] || 0) + 1;
+    }
     const regionLabel = rfq.region || rfq.country || 'Unknown';
     byRegion[regionLabel] = (byRegion[regionLabel] || 0) + 1;
   });

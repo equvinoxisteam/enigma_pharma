@@ -49,7 +49,7 @@ const AnalyticsPage = () => {
         <div>
           <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
           <p className="text-gray-600">
-            {isBuyer ? 'Track your RFQ publishing and sourcing performance' : 'Track your manufacturing pipeline performance'}
+            {isBuyer ? 'Track your pharma RFQ publishing and sourcing performance' : 'Track your CDMO bid pipeline and win rate'}
           </p>
         </div>
         <select
@@ -97,8 +97,8 @@ const AnalyticsPage = () => {
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">RFQs by Technology</h3>
-          <SimpleBarChart data={byTechnology} color="#4881F8" emptyText="No RFQ technology data in this period" />
+          <h3 className="text-lg font-semibold mb-4">RFQs by Service Category</h3>
+          <SimpleBarChart data={byTechnology} color="#4881F8" emptyText="No RFQ service category data in this period" />
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">RFQs by Region</h3>

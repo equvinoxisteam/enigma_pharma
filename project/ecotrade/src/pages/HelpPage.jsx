@@ -25,7 +25,7 @@ const HelpPage = () => {
         },
         {
           q: 'What file formats are supported?',
-          a: 'NDA/CDA and project documents must be PDF format (max 50MB each). CAD/STL files are not used on Enigma Pharma.'
+          a: 'NDA/CDA, project PDF, and supporting documents must be PDF format (max 150 MB each). CAD/STL files are not used on Enigma Pharma.'
         },
         {
           q: 'How do I select a CDMO partner?',

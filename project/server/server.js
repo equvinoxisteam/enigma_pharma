@@ -25,50 +25,54 @@ const sellerRoutes = require('./routes/sellerRoutes');
 
 const app = express();
 
+const { cleanEnv } = require('./utils/envUtils');
+
 // Environment-based configuration
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const isProduction = process.env.NODE_ENV === 'production';
 
+const parseOriginList = (raw) =>
+  cleanEnv(raw)
+    .split(',')
+    .map((origin) => cleanEnv(origin))
+    .filter(Boolean);
+
 // CORS configuration for both environments
-const envOrigins = (process.env.CORS_ORIGINS || '')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const envOrigins = parseOriginList(process.env.CORS_ORIGINS || '');
+
+const PHARMA_ORIGINS = [
+  'https://enigmapharma.equvinoxis.com',
+  'https://www.enigmapharma.equvinoxis.com',
+];
+
+const buildAllowedOrigins = () => [
+  ...envOrigins,
+  ...(isProduction ? PHARMA_ORIGINS : []),
+  cleanEnv(process.env.FRONTEND_URL),
+  cleanEnv(process.env.CLIENT_URL),
+  ...(isDevelopment ? [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:4173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    'http://127.0.0.1:4173',
+    'http://127.0.0.1:3000',
+  ] : []),
+].filter(Boolean);
+
+const allowedOrigins = [...new Set(buildAllowedOrigins())];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
-    const productionFallbackOrigins = isProduction ? [
-      'https://enigmapharma.equvinoxis.com',
-      'https://www.enigmapharma.equvinoxis.com',
-      'https://api.enigmapharma.equvinoxis.com',
-    ] : [];
 
-    const allowedOrigins = [
-      ...envOrigins,
-      ...productionFallbackOrigins,
-      process.env.FRONTEND_URL,
-      process.env.CLIENT_URL,
-      // Development URLs
-      ...(isDevelopment ? [
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'http://localhost:4173',
-        'http://localhost:3000',
-        'http://127.0.0.1:5173',
-        'http://127.0.0.1:5174',
-        'http://127.0.0.1:4173',
-        'http://127.0.0.1:3000',
-      ] : []),
-    ].filter(Boolean);
-    
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.error(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
-      callback(new Error(`CORS: origin ${origin} not allowed`));
+      callback(null, false);
     }
   },
   credentials: true,
@@ -241,16 +245,16 @@ app.use('*', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-const { probeS3WriteAccess } = require('./config/aws');
+const PORT = process.env.PORT || 5005;
 
-app.listen(PORT, async () => {
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(` Server running on port ${PORT}`);
   console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(` CORS enabled for: ${isDevelopment ? 'Development + Production URLs' : 'Production URL only'}`);
+  console.log(` CORS allowed origins: ${allowedOrigins.join(', ') || '(none configured)'}`);
   console.log(`Database: ${process.env.MONGODB_URI ? 'Connected' : 'Not configured'}`);
-  console.log(` API_URL for file URLs: ${process.env.API_URL || 'not set'}`);
+  console.log(` API_URL for file URLs: ${cleanEnv(process.env.API_URL) || 'not set'}`);
 
+  const { probeS3WriteAccess } = require('./config/aws');
   await probeS3WriteAccess();
 
   if (isDevelopment) {

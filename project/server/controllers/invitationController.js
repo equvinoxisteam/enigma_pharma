@@ -8,6 +8,7 @@ const {
   countRfqRequestsInPeriod
 } = require('../utils/subscriptionUtils');
 const { hasFeature, FEATURE_KEYS } = require('../config/planFeatures');
+const { isRfqOwnedByUser } = require('../utils/rfqVisibilityUtils');
 
 // @desc    Get invitations for manufacturer
 // @route   GET /api/invitations
@@ -48,6 +49,10 @@ const createInvitation = async (req, res) => {
       return res.status(400).json({ message: 'RFQ is not accepting invitations' });
     }
 
+    if (manufacturerId.toString() === buyerId.toString()) {
+      return res.status(403).json({ message: 'You cannot invite yourself to your own RFQ.' });
+    }
+
     // Check if already invited
     const existingInvitation = await Invitation.findOne({
       rfqId,
@@ -85,6 +90,12 @@ const acceptInvitation = async (req, res) => {
 
     if (!invitation || invitation.manufacturerId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    if (isRfqOwnedByUser(invitation.rfqId, req.user._id)) {
+      return res.status(403).json({
+        message: 'You cannot accept an invitation to your own RFQ.'
+      });
     }
 
     await applyPendingPlanChanges(req.user);

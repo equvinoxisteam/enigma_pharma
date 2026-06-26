@@ -61,7 +61,7 @@ const AISearchModal = ({ onClose }) => {
 
     if (!fullAI) {
       setResults({
-        suggestions: 'STL Model Match requires Standard plan or higher. Upgrade for full AI matching.',
+        suggestions: 'Document-based matching requires Standard plan or higher. Upgrade for full AI CDMO matching.',
         rfqs: [],
         manufacturers: [],
         isLimitedAI: true
@@ -77,11 +77,11 @@ const AISearchModal = ({ onClose }) => {
       await uploadAPI.uploadFile(formData);
 
       const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
-      const query = `CNC precision manufacturing ${baseName}`;
-      const resp = await searchAPI.aiSearch(query);
+      const searchQuery = `pharma CDMO ${baseName} API formulation GMP`;
+      const resp = await searchAPI.aiSearch(searchQuery);
       setResults({
         ...resp.data,
-        suggestions: `Analyzed ${file.name} — matched manufacturers ranked by plan tier and capabilities.`,
+        suggestions: `Analyzed ${file.name} — matched CDMO partners by service category and GMP certifications.`,
         modelFile: file.name
       });
     } catch (err) {
@@ -114,9 +114,9 @@ const AISearchModal = ({ onClose }) => {
             className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black transition-all ${
               activeTab === 'model' ? 'bg-white text-blue-600 shadow-sm' : fullAI ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 cursor-not-allowed'
             }`}
-            title={fullAI ? 'Upload STL for model matching' : 'Upgrade to Standard+ for STL model match'}
+            title={fullAI ? 'Upload NDA or product spec PDF for CDMO matching' : 'Upgrade to Standard+ for document-based matching'}
           >
-            <Box size={16} /> <span className="truncate">STL Match{!fullAI && ' 🔒'}</span>
+            <FileText size={16} /> <span className="truncate">PDF Match{!fullAI && ' 🔒'}</span>
           </button>
         </div>
 
@@ -169,7 +169,7 @@ const AISearchModal = ({ onClose }) => {
                   <Loader2 className="animate-spin text-[#4881F8]" size={64} />
                   <div>
                     <p className="text-xl font-black text-[#01364a]">Analyzing Geometry...</p>
-                    <p className="text-sm text-gray-500 font-bold">Extracting materials and manufacturing specs</p>
+                    <p className="text-sm text-gray-500 font-bold">Matching service category and GMP requirements</p>
                   </div>
                 </div>
               ) : (
@@ -178,8 +178,8 @@ const AISearchModal = ({ onClose }) => {
                     <Upload size={32} />
                   </div>
                   <div>
-                    <p className="text-2xl font-black text-[#01364a]">Upload CAD Model</p>
-                    <p className="text-sm text-gray-400 font-bold">Drag and drop STL or STEP files to find matching suppliers</p>
+                    <p className="text-2xl font-black text-[#01364a]">Upload project document</p>
+                    <p className="text-sm text-gray-400 font-bold">Drag and drop NDA or product spec PDFs to find matching CDMO partners</p>
                   </div>
                 </div>
               )}
@@ -216,7 +216,7 @@ const AISearchModal = ({ onClose }) => {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <span className="px-3 py-1 bg-gray-50 text-gray-600 text-[10px] font-black uppercase tracking-wider rounded-lg border border-gray-100">
-                          {rfq.workpieces?.[0]?.technology || 'CNC'}
+                          {rfq.pharmaProject?.serviceCategory?.replace(/_/g, ' ') || 'Pharma RFQ'}
                         </span>
                         <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-wider rounded-lg border border-blue-100">
                           {rfq.workpieces?.[0]?.material || 'Steel'}

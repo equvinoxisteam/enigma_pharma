@@ -74,10 +74,23 @@ const sanitizePoolRfq = (rfqDoc, user) => {
   };
 };
 
+const getRfqBuyerId = (rfq) => {
+  if (!rfq?.buyerId) return null;
+  return rfq.buyerId._id?.toString() || rfq.buyerId.toString();
+};
+
+const isRfqOwnedByUser = (rfq, userId) => {
+  if (!userId || !rfq) return false;
+  const buyerId = getRfqBuyerId(rfq);
+  return buyerId === userId.toString();
+};
+
 module.exports = {
   SELECTED_STATUSES,
   isPaidManufacturer,
   isSelectedSupplier,
   sanitizeRfqForManufacturerView,
-  sanitizePoolRfq
+  sanitizePoolRfq,
+  getRfqBuyerId,
+  isRfqOwnedByUser
 };

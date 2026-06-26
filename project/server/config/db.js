@@ -4,10 +4,14 @@ require('dotenv').config();
 const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGODB_URI;
-    
+    if (!mongoUri) {
+      console.error('MONGODB_URI is not set');
+      process.exit(1);
+    }
+
     await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+      serverSelectionTimeoutMS: 15000,
+      socketTimeoutMS: 45000,
     });
     console.log(`MongoDB Connected to ${mongoose.connection.db.databaseName} database`);
   } catch (err) {

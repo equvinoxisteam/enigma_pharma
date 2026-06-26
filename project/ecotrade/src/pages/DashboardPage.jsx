@@ -185,9 +185,9 @@ const DashboardPage = () => {
                 <AIIcon size={16} className="text-blue-200" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-blue-200">AI Matchmaking</span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">Find manufacturers or RFQs instantly</h2>
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">Find CDMO partners or pharma projects instantly</h2>
               <p className="text-blue-100/80 text-sm max-w-lg">
-                Describe what you need — materials, technology, quantity — and Enigma AI finds the best matches.
+                Describe your molecule, service category, or GMP needs — Enigma Pharma AI finds the best CDMO matches.
               </p>
             </div>
             <button

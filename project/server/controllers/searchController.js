@@ -39,7 +39,8 @@ const searchRFQsController = async (req, res) => {
 
     // Build query
     const query = {
-      status: { $in: ['OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'] } // Only show open RFQs
+      status: { $in: ['OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'] },
+      buyerId: { $ne: req.user._id }
     };
 
     // Text search on title and description
@@ -261,23 +262,27 @@ const getRecommendationsController = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const { userType, manufacturerSettings } = user;
+    const { userType } = user;
     let query = {
-      status: { $in: ['OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'] }
+      status: { $in: ['OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'] },
+      buyerId: { $ne: req.user._id }
     };
 
-    // If manufacturer, recommend RFQs matching their skills
     if (userType === 'MANUFACTURER' || userType === 'HYBRID') {
-      const { technologies, materials } = manufacturerSettings || {};
-      
-      const shouldMatch = [];
-      if (technologies && technologies.length > 0) {
-        shouldMatch.push({ 'workpieces.technology': { $in: technologies } });
-      }
-      if (materials && materials.length > 0) {
-        shouldMatch.push({ 'workpieces.material': { $in: materials.map(m => new RegExp(m, 'i')) } });
-      }
+      const mfrCategories = user.serviceCategories?.length
+        ? user.serviceCategories
+        : (user.manufacturingTypes || []);
+      const mfrGmp = user.gmpCertifications?.length
+        ? user.gmpCertifications
+        : (user.certifications || []);
 
+      const shouldMatch = [];
+      if (mfrCategories.length > 0) {
+        shouldMatch.push({ 'pharmaProject.serviceCategory': { $in: mfrCategories } });
+      }
+      if (mfrGmp.length > 0) {
+        shouldMatch.push({ 'regulatory.requiredGmp': { $in: mfrGmp } });
+      }
       if (shouldMatch.length > 0) {
         query.$or = shouldMatch;
       }
@@ -322,19 +327,39 @@ const aiSearchController = async (req, res) => {
     const resultLimit = isLimitedAI ? 2 : 5;
 
     const normalizedQuery = query.toLowerCase();
-    const techs = ['cnc', '3d printing', 'milling', 'turning', 'sheet metal', 'welding', 'assembly', 'injection molding'];
-    const detectedTechs = techs.filter((t) => normalizedQuery.includes(t.toLowerCase()))
-      .map((t) => t.toUpperCase().replace(' ', '_'));
+    const categoryHints = [
+      ['api', 'API_MANUFACTURING'],
+      ['intermediate', 'API_INTERMEDIATES'],
+      ['formulation', 'FORMULATION_DEVELOPMENT'],
+      ['clinical', 'CLINICAL_TRIAL_MFG'],
+      ['commercial', 'COMMERCIAL_CDMO'],
+      ['biologic', 'BIOLOGICS_BIOSIMILARS'],
+      ['biosimilar', 'BIOLOGICS_BIOSIMILARS'],
+      ['hpapi', 'HPAPI_ONCOLOGY'],
+      ['oncology', 'HPAPI_ONCOLOGY'],
+      ['fill finish', 'FILL_FINISH'],
+      ['stability', 'STABILITY_STUDIES'],
+      ['analytical', 'ANALYTICAL_QC'],
+      ['regulatory', 'REGULATORY_CMC'],
+      ['cmc', 'REGULATORY_CMC'],
+      ['packaging', 'PACKAGING_LABELING']
+    ];
+    const detectedCategories = categoryHints
+      .filter(([hint]) => normalizedQuery.includes(hint))
+      .map(([, cat]) => cat);
 
     let rfqQuery = {
       status: { $in: ['OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'] },
+      buyerId: { $ne: req.user._id },
       $or: [
         { title: { $regex: query, $options: 'i' } },
-        { description: { $regex: query, $options: 'i' } }
+        { description: { $regex: query, $options: 'i' } },
+        { 'pharmaProject.moleculeName': { $regex: query, $options: 'i' } },
+        { 'pharmaProject.therapeuticArea': { $regex: query, $options: 'i' } }
       ]
     };
-    if (detectedTechs.length > 0) {
-      rfqQuery.$or.push({ 'workpieces.technology': { $in: detectedTechs } });
+    if (detectedCategories.length > 0) {
+      rfqQuery.$or.push({ 'pharmaProject.serviceCategory': { $in: detectedCategories } });
     }
 
     const rfqs = await RFQ.find(rfqQuery)
@@ -347,13 +372,15 @@ const aiSearchController = async (req, res) => {
       manufacturerStatus: 'ACTIVE',
       $or: [
         { companyName: { $regex: query, $options: 'i' } },
-        { 'manufacturerSettings.partTypes': { $regex: query, $options: 'i' } },
-        { primaryMaterials: { $regex: query, $options: 'i' } }
+        { serviceCategories: { $regex: query, $options: 'i' } },
+        { manufacturingTypes: { $regex: query, $options: 'i' } },
+        { gmpCertifications: { $regex: query, $options: 'i' } },
+        { 'pharmaProfile.therapeuticFocus': { $regex: query, $options: 'i' } }
       ]
     };
-    if (detectedTechs.length > 0) {
-      mfrQuery.$or.push({ 'manufacturerSettings.technologies': { $in: detectedTechs } });
-      mfrQuery.$or.push({ manufacturingTypes: { $in: detectedTechs } });
+    if (detectedCategories.length > 0) {
+      mfrQuery.$or.push({ serviceCategories: { $in: detectedCategories } });
+      mfrQuery.$or.push({ manufacturingTypes: { $in: detectedCategories } });
     }
 
     const manufacturers = await User.aggregate([
@@ -370,10 +397,10 @@ const aiSearchController = async (req, res) => {
         rfqs,
         manufacturers,
         isLimitedAI,
-        suggestions: detectedTechs.length > 0
-          ? `Showing results for ${detectedTechs.join(', ')} capabilities.`
+        suggestions: detectedCategories.length > 0
+          ? `Showing pharma projects for ${detectedCategories.map((c) => c.replace(/_/g, ' ')).join(', ')}.`
           : isLimitedAI
-            ? 'Limited AI matching on Free plan — upgrade for full results and STL model match.'
+            ? 'Limited AI matching on Free plan — upgrade for full CDMO and RFQ results.'
             : null
       }
     });

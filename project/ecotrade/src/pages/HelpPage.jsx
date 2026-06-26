@@ -125,7 +125,7 @@ const HelpPage = () => {
           <p className="text-sm text-gray-600">Common questions and answers</p>
         </a>
         <a
-          href="https://docs.enigma.com"
+          href="mailto:info@equvinoxis.com"
           target="_blank"
           rel="noopener noreferrer"
           className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#4881F8] hover:shadow-md transition-all"

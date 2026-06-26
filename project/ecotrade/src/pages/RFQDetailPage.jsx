@@ -16,6 +16,8 @@ const RFQDetailPage = () => {
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
   const canRequest = hasFeature(user, FEATURE_KEYS.RFQ_RESPOND);
+  const buyerId = rfq?.buyerId?._id?.toString() || rfq?.buyerId?.toString();
+  const isOwnRfq = Boolean(user?._id && buyerId && buyerId === user._id.toString());
   const [rfq, setRfq] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -34,7 +36,7 @@ const RFQDetailPage = () => {
       const response = await rfqAPI.getById(id);
       setRfq(response.data);
     } catch (error) {
-      showError('Failed to load RFQ');
+      showError(error.friendlyMessage || 'Unable to load this project right now. Please try again.');
       navigate('/rfqs-pool');
     } finally {
       setLoading(false);
@@ -51,7 +53,7 @@ const RFQDetailPage = () => {
         fetchRFQ();
       }
     } catch (error) {
-      showError(error.response?.data?.message || 'Failed to submit bid');
+      showError(error.friendlyMessage || error.response?.data?.message || 'Unable to submit your bid. Please try again.');
     }
   };
 
@@ -70,7 +72,11 @@ const RFQDetailPage = () => {
           <p className="text-gray-500">RFQ #{rfq._id.toString().slice(-6)}</p>
         </div>
         {(rfq.status === 'OPEN_FOR_REQUESTS' || rfq.status === 'REQUESTS_PENDING') && (
-          canRequest ? (
+          isOwnRfq ? (
+            <Link to="/my-rfqs" className="px-6 py-2.5 bg-gray-100 text-[#01364a] rounded-xl font-bold text-center border border-gray-200">
+              Your project — manage in My RFQs
+            </Link>
+          ) : canRequest ? (
             <button type="button" onClick={() => setShowRequestModal(true)} className="px-6 py-2.5 bg-[#4881F8] text-white rounded-xl font-bold">Submit bid</button>
           ) : (
             <Link to="/pricing" className="px-6 py-2.5 bg-[#01364a] text-white rounded-xl font-bold text-center">Upgrade to bid</Link>

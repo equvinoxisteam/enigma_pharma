@@ -5,7 +5,7 @@
 | Service | Domain | Port |
 |---------|--------|------|
 | **Frontend** | `https://enigmapharma.equvinoxis.com` | 3000 |
-| **Backend API** | `https://api.enigmapharma.equvinoxis.com` | 5005 |
+| **Backend API** | `https://api.enigmapharma.equvinoxis.com` | Railway `PORT` (auto) |
 
 MongoDB database: **`enigmapharma`** (not `enigma`)  
 S3 folder prefix: **`enigmapharma`**
@@ -30,12 +30,11 @@ Repo: https://github.com/equvinoxisteam/enigma_pharma.git
 
 ```
 NODE_ENV=production
-PORT=5005
-MONGODB_URI=mongodb+srv://equvinoxis:teamequvinoxis%402026@equvinoxis.8lzbdtf.mongodb.net/enigmapharma?retryWrites=true&w=majority&appName=equvinoxis
-JWT_SECRET=SarvinSecretKeyIYBGJhhhJ3fd
+MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster.mongodb.net/enigmapharma?retryWrites=true&w=majority
+JWT_SECRET=your_jwt_secret
 JWT_EXPIRE=7d
-ADMIN_EMAIL=aniketh1607@gmail.com
-ADMIN_PASSWORD=aniketheq@163
+ADMIN_EMAIL=your_admin@email.com
+ADMIN_PASSWORD=your_strong_admin_password
 FRONTEND_URL=https://enigmapharma.equvinoxis.com
 CLIENT_URL=https://enigmapharma.equvinoxis.com
 API_URL=https://api.enigmapharma.equvinoxis.com
@@ -56,7 +55,9 @@ SUPPORT_EMAIL=info@equvinoxis.com
 VERTICAL=pharma
 ```
 
-Replace `YOUR_AWS_*` and `YOUR_GMAIL_*` with your Equvinoxis credentials (same as manufacturing Enigma, but `S3_FOLDER_PREFIX=enigmapharma` and DB `enigmapharma`).
+**Important:** Do **not** set `PORT` in Railway — Railway assigns it automatically. Hardcoding `PORT=5005` causes **502 Bad Gateway** and CORS errors in the browser.
+
+Replace `YOUR_AWS_*` and `YOUR_GMAIL_*` with your Equvinoxis credentials (same AWS bucket as manufacturing, but `S3_FOLDER_PREFIX=enigmapharma` and DB `enigmapharma`).
 
 **Do not add Razorpay keys.**
 

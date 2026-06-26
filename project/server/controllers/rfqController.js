@@ -10,7 +10,7 @@ const {
   getRfqRequestLimit,
   countRfqRequestsInPeriod
 } = require('../utils/subscriptionUtils');
-const { sanitizeRfqForManufacturerView, sanitizePoolRfq, isSelectedSupplier } = require('../utils/rfqVisibilityUtils');
+const { sanitizeRfqForManufacturerView, sanitizePoolRfq, isSelectedSupplier, isRfqOwnedByUser } = require('../utils/rfqVisibilityUtils');
 
 // @desc    Create new RFQ
 // @route   POST /api/rfqs
@@ -164,7 +164,8 @@ const getRFQPool = async (req, res) => {
     } = req.query;
 
     let query = {
-      status: { $in: ['OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'] }
+      status: { $in: ['OPEN_FOR_REQUESTS', 'REQUESTS_PENDING'] },
+      buyerId: { $ne: req.user._id }
     };
 
     if (serviceCategory) {
@@ -333,6 +334,11 @@ const getRFQById = async (req, res) => {
         const isOpenPoolRfq = rfq.status === 'OPEN_FOR_REQUESTS' || rfq.status === 'REQUESTS_PENDING';
 
         if (isOpenPoolRfq) {
+          if (isRfqOwnedByUser(rfq, userId)) {
+            return res.status(403).json({
+              message: 'This is your own pharma RFQ. Manage it from My RFQs — you cannot bid on your own project.'
+            });
+          }
           return res.json({
             success: true,
             data: sanitizeRfqForManufacturerView(rfq, req.user)
@@ -498,6 +504,12 @@ const requestRFQ = async (req, res) => {
       return res.status(404).json({ message: 'RFQ not found' });
     }
 
+    if (isRfqOwnedByUser(rfq, manufacturerId)) {
+      return res.status(403).json({
+        message: 'You cannot bid on your own RFQ. Manage it from My RFQs.'
+      });
+    }
+
     if (rfq.status !== 'OPEN_FOR_REQUESTS' && rfq.status !== 'REQUESTS_PENDING') {
       return res.status(400).json({ message: 'RFQ is not accepting requests' });
     }
@@ -590,6 +602,12 @@ const acceptManufacturer = async (req, res) => {
 
     if (manufacturerRequest.rfqId.toString() !== rfqId) {
       return res.status(400).json({ message: 'Invalid manufacturer request for this RFQ' });
+    }
+
+    const selectedMfrId = manufacturerRequest.manufacturerId._id?.toString()
+      || manufacturerRequest.manufacturerId.toString();
+    if (selectedMfrId === buyerId.toString()) {
+      return res.status(403).json({ message: 'You cannot accept your own bid on your RFQ.' });
     }
 
     // Update RFQ

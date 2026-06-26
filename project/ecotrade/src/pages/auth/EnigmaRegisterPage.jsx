@@ -249,7 +249,7 @@ const EnigmaRegisterPage = () => {
         });
       }
     } catch (error) {
-      showError(error.response?.data?.message || 'Registration failed. Please try again.');
+      showError(error.friendlyMessage || error.response?.data?.message || 'Registration could not be completed. Please check your details and try again.');
     } finally {
       setIsSubmitting(false);
     }

@@ -8,7 +8,9 @@ const occtDest = join(root, 'public', 'occt');
 
 const postModule = resolve(root, '../../../staircase/web/staircase-module-post.js');
 const buildDir = resolve(root, '../../../staircase/build/staircase');
-const occtWasm = join(root, 'node_modules', 'occt-import-js', 'dist', 'occt-import-js.wasm');
+const occtDist = join(root, 'node_modules', 'occt-import-js', 'dist');
+const occtJs = join(occtDist, 'occt-import-js.js');
+const occtWasm = join(occtDist, 'occt-import-js.wasm');
 
 mkdirSync(staircaseDest, { recursive: true });
 mkdirSync(occtDest, { recursive: true });
@@ -37,6 +39,13 @@ writeFileSync(
   join(staircaseDest, 'manifest.json'),
   JSON.stringify({ available: staircaseAvailable }, null, 2)
 );
+
+if (existsSync(occtJs)) {
+  cpSync(occtJs, join(occtDest, 'occt-import-js.js'));
+  console.log('Copied occt-import-js.js');
+} else {
+  console.warn('occt-import-js.js not found in node_modules');
+}
 
 if (existsSync(occtWasm)) {
   cpSync(occtWasm, join(occtDest, 'occt-import-js.wasm'));

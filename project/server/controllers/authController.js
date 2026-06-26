@@ -7,6 +7,13 @@ const { getEffectivePlanType, PLAN_TYPES } = require('../config/planFeatures');
 const { formatUserResponse } = require('../utils/userResponse');
 const { getAdminCredentials } = require('../utils/envUtils');
 
+const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
+
+const resolveServiceCategories = (body) => {
+  const fromBody = body.serviceCategories?.length ? body.serviceCategories : body.manufacturingTypes;
+  return Array.isArray(fromBody) ? fromBody.filter(Boolean).map((item) => String(item).trim()).filter(Boolean) : [];
+};
+
 const bootstrapAdminUser = async (email, plainPassword) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(plainPassword, salt);
@@ -54,7 +61,7 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const normalizedEmail = String(email).trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
     const { email: adminEmail, password: adminPassword } = getAdminCredentials();
 
     const isAdminLogin = Boolean(
@@ -189,9 +196,10 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
-    // Validate manufacturing types only for manufacturer-capable roles
+    // Validate service categories only for manufacturer-capable roles
     const needsManufacturingProfile = userType === 'MANUFACTURER' || userType === 'HYBRID';
-    if (needsManufacturingProfile && (!req.body.serviceCategories?.length && (!manufacturingTypes || manufacturingTypes.length === 0))) {
+    const serviceCategories = resolveServiceCategories(req.body);
+    if (needsManufacturingProfile && serviceCategories.length === 0) {
       return res.status(400).json({ message: 'Select at least one service category (API, CDMO, etc.)' });
     }
 
@@ -241,8 +249,8 @@ const registerUser = async (req, res) => {
     };
 
     // Add all fields for all user types
-    userData.manufacturingTypes = manufacturingTypes || req.body.serviceCategories || [];
-    userData.serviceCategories = req.body.serviceCategories || manufacturingTypes || [];
+    userData.manufacturingTypes = serviceCategories;
+    userData.serviceCategories = serviceCategories;
     userData.gmpCertifications = req.body.gmpCertifications || certifications || [];
     userData.companySize = companySize || '';
     userData.yearsInBusiness = yearsInBusiness || 0;
@@ -258,7 +266,7 @@ const registerUser = async (req, res) => {
     if (userType === 'MANUFACTURER' || userType === 'HYBRID') {
       userData.manufacturerStatus = manufacturerStatus;
       userData.manufacturerSettings = {
-        technologies: manufacturingTypes || [],
+        technologies: serviceCategories,
         materials: primaryMaterials || [],
         partTypes: [],
         machinery: [],
@@ -299,6 +307,10 @@ const registerUser = async (req, res) => {
     console.error('Registration error:', error);
     if (error.code === 11000) {
       return res.status(400).json({ message: 'Email already exists' });
+    }
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors || {}).map((err) => err.message);
+      return res.status(400).json({ message: messages.join(' ') || 'Invalid registration data' });
     }
     res.status(500).json({ message: 'Server error: ' + error.message });
   }
@@ -363,7 +375,7 @@ const resendVerificationEmail = async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizeEmail(email) });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -403,7 +415,7 @@ const forgotPassword = async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizeEmail(email) });
 
     if (!user) {
       // Don't reveal if user exists for security

@@ -19,6 +19,12 @@ const PLAN_RANK = {
 
 const isDowngrade = (fromPlan, toPlan) => (PLAN_RANK[toPlan] ?? 0) < (PLAN_RANK[fromPlan] ?? 0);
 
+const clearPendingPlan = (subscription) => {
+  if (!subscription) return;
+  subscription.pendingPlanType = undefined;
+  subscription.pendingPlanEffectiveAt = undefined;
+};
+
 const applyPendingPlanChanges = async (user) => {
   if (!user?.subscription?.pendingPlanType || !user.subscription.pendingPlanEffectiveAt) {
     return user;
@@ -26,8 +32,7 @@ const applyPendingPlanChanges = async (user) => {
 
   if (new Date() >= new Date(user.subscription.pendingPlanEffectiveAt)) {
     user.subscription.planType = user.subscription.pendingPlanType;
-    user.subscription.pendingPlanType = null;
-    user.subscription.pendingPlanEffectiveAt = null;
+    clearPendingPlan(user.subscription);
 
     if (user.subscription.planType === PLAN_TYPES.FREE) {
       user.subscription.status = 'ACTIVE';
@@ -95,8 +100,7 @@ const getSubscriptionUsage = async (user) => {
 const schedulePlanDowngrade = (user, targetPlan = PLAN_TYPES.FREE) => {
   const current = user.subscription.planType;
   if (current === targetPlan) {
-    user.subscription.pendingPlanType = null;
-    user.subscription.pendingPlanEffectiveAt = null;
+    clearPendingPlan(user.subscription);
     return;
   }
 
@@ -109,8 +113,7 @@ const activatePlan = (user, planType) => {
   user.subscription.status = 'ACTIVE';
   user.subscription.startsAt = new Date();
   user.subscription.expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-  user.subscription.pendingPlanType = null;
-  user.subscription.pendingPlanEffectiveAt = null;
+  clearPendingPlan(user.subscription);
   user.subscription.pausedAt = null;
   user.subscription.deactivatedAt = null;
 

@@ -86,7 +86,14 @@ const updateProfile = async (req, res) => {
     if (companySize !== undefined) user.companySize = companySize;
     if (gstNumber !== undefined) user.gstNumber = gstNumber;
     if (industryVertical !== undefined) user.industryVertical = industryVertical;
-    if (manufacturingTypes !== undefined) user.manufacturingTypes = manufacturingTypes;
+    if (manufacturingTypes !== undefined) {
+      user.manufacturingTypes = manufacturingTypes;
+      user.serviceCategories = manufacturingTypes;
+    }
+    if (req.body.serviceCategories !== undefined) {
+      user.serviceCategories = req.body.serviceCategories;
+      user.manufacturingTypes = req.body.serviceCategories;
+    }
     if (yearsInBusiness !== undefined) user.yearsInBusiness = yearsInBusiness;
     if (annualSpending !== undefined) user.annualSpending = annualSpending;
     if (procurementTeamSize !== undefined) user.procurementTeamSize = procurementTeamSize;
@@ -102,6 +109,7 @@ const updateProfile = async (req, res) => {
       user.manufacturerSettings = { ...user.manufacturerSettings?.toObject?.() || user.manufacturerSettings || {}, ...manufacturerSettings };
       if (manufacturerSettings.technologies) {
         user.manufacturingTypes = manufacturerSettings.technologies;
+        user.serviceCategories = manufacturerSettings.technologies;
       }
       if (manufacturerSettings.materials) {
         user.primaryMaterials = manufacturerSettings.materials;

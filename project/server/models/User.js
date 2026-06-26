@@ -204,9 +204,9 @@ const userSchema = new mongoose.Schema({
   
   // Manufacturer Settings (Profile)
   manufacturerSettings: {
+    // Pharma service categories (codes from SERVICE_CATEGORIES) or custom "Other" labels
     technologies: [{
-      type: String,
-      enum: ['CNC', 'TURNING', 'MILLING', '3D_PRINTING', 'SHEET_METAL', 'DIE_CASTING', 'INJECTION_MOLDING', 'STAMPING', 'WELDING', 'ASSEMBLY', 'OTHER']
+      type: String
     }],
     materials: [{
       type: String
@@ -320,8 +320,7 @@ const userSchema = new mongoose.Schema({
     },
     pendingPlanType: {
       type: String,
-      enum: ['BUYER_FREE', 'FREE', 'STANDARD', 'PRO', 'ENTERPRISE'],
-      default: null
+      enum: ['BUYER_FREE', 'FREE', 'STANDARD', 'PRO', 'ENTERPRISE']
     },
     pendingPlanEffectiveAt: {
       type: Date,

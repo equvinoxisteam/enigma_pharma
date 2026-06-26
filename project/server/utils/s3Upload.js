@@ -45,7 +45,7 @@ const createUpload = (maxSize = 5 * 1024 * 1024) => multer({
 const upload = createUpload(5 * 1024 * 1024);
 const uploadLarge = createUpload(150 * 1024 * 1024);
 const uploadMedium = createUpload(50 * 1024 * 1024);
-const uploadDocument = createUpload(10 * 1024 * 1024);
+const uploadDocument = createUpload(150 * 1024 * 1024);
 const uploadCompanyDoc = createUpload(5 * 1024 * 1024);
 
 const getObjectKey = (folder, filename) => {

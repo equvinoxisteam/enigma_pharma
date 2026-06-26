@@ -128,6 +128,7 @@ const updateProfile = async (req, res) => {
     }
     if (req.body.therapeuticAreas !== undefined) user.therapeuticAreas = req.body.therapeuticAreas;
     if (req.body.batchScaleCapacity !== undefined) user.batchScaleCapacity = req.body.batchScaleCapacity;
+    if (req.body.buyerCompanyType !== undefined) user.buyerCompanyType = req.body.buyerCompanyType;
     if (maxDimensions !== undefined) user.maxDimensions = maxDimensions;
 
     // Calculate profile completeness

@@ -18,7 +18,7 @@ const { sanitizeRfqForManufacturerView, sanitizePoolRfq, isSelectedSupplier, isR
 const createRFQ = async (req, res) => {
   try {
     const {
-      title, description, status = 'DRAFT', ndaFile, isCorporateRFQ,
+      title, description, status = 'DRAFT', ndaFile, projectPdf, isCorporateRFQ,
       pharmaProject, documents, regulatory, requirements = {}
     } = req.body;
     const buyerId = req.user._id;
@@ -44,6 +44,7 @@ const createRFQ = async (req, res) => {
       documents: documents || [],
       regulatory: regulatory || {},
       ndaFile,
+      projectPdf: projectPdf || requirements?.projectPdf || '',
       isCorporateRFQ: Boolean(isCorporateRFQ || requirements?.isCorporateRFQ),
       preferredCurrency: requirements.preferredCurrency,
       rfqDeadline: requirements.rfqDeadline,

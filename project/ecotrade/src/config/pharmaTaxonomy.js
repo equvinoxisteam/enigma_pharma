@@ -36,6 +36,13 @@ export const GMP_LABELS = {
 };
 
 export const LICENSE_TYPES = ['DRUG_MANUFACTURING', 'EXPORT_LICENSE', 'IMPORT_LICENSE', 'SCHEDULE_M', 'OTHER'];
+export const LICENSE_LABELS = {
+  DRUG_MANUFACTURING: 'Drug Manufacturing License',
+  EXPORT_LICENSE: 'Export License',
+  IMPORT_LICENSE: 'Import License',
+  SCHEDULE_M: 'Schedule M Compliance',
+  OTHER: 'Other License'
+};
 export const DOCUMENT_TYPES = ['PRODUCT_SPEC', 'PROCESS_DESCRIPTION', 'ANALYTICAL_METHOD', 'COA_TEMPLATE', 'DMF_REFERENCE', 'STABILITY_PROTOCOL', 'OTHER'];
 export const DOCUMENT_TYPE_LABELS = {
   PRODUCT_SPEC: 'Product Specification', PROCESS_DESCRIPTION: 'Process Description',
@@ -54,5 +61,32 @@ export const BATCH_SCALE_LABELS = {
   SCALE_50_500KG: 'Scale-up (50–500 kg)', COMMERCIAL_500KG_PLUS: 'Commercial (500 kg+)',
   NOT_SPECIFIED: 'To be discussed'
 };
+
+/** Incoterms 2020 — common for API / CDMO supply agreements */
+export const PHARMA_INCOTERMS = [
+  { value: '', label: 'Select preferred terms' },
+  { value: 'EXW', label: 'EXW — Ex Works' },
+  { value: 'FCA', label: 'FCA — Free Carrier' },
+  { value: 'CPT', label: 'CPT — Carriage Paid To' },
+  { value: 'CIP', label: 'CIP — Carriage & Insurance Paid To' },
+  { value: 'DAP', label: 'DAP — Delivered at Place' },
+  { value: 'DPU', label: 'DPU — Delivered at Place Unloaded' },
+  { value: 'DDP', label: 'DDP — Delivered Duty Paid' },
+  { value: 'FOB', label: 'FOB — Free on Board' },
+  { value: 'CFR', label: 'CFR — Cost & Freight' },
+  { value: 'CIF', label: 'CIF — Cost, Insurance & Freight' }
+];
+
+export const BUYER_COMPANY_TYPES = ['INNOVATOR', 'GENERIC', 'BIOTECH', 'CRO', 'DISTRIBUTOR', 'OTHER'];
+export const BUYER_COMPANY_TYPE_LABELS = {
+  INNOVATOR: 'Innovator / Big Pharma',
+  GENERIC: 'Generic Manufacturer',
+  BIOTECH: 'Biotech',
+  CRO: 'CRO / CMO Buyer',
+  DISTRIBUTOR: 'Distributor / Trader',
+  OTHER: 'Other'
+};
+
+export const MAX_PHARMA_DOC_BYTES = 150 * 1024 * 1024;
 
 export const labelFor = (map, key) => map[key] || key?.replace(/_/g, ' ') || '—';

@@ -4,11 +4,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { rfqAPI } from '../api/rfqAPI';
 import { uploadAPI } from '../api/uploadAPI';
+import PharmaPdfPreview from '../components/PharmaPdfPreview';
 import {
   SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, DEVELOPMENT_PHASES, DEVELOPMENT_PHASE_LABELS,
-  GMP_CERTIFICATIONS, GMP_LABELS, LICENSE_TYPES, DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS,
-  THERAPEUTIC_AREAS, BATCH_SCALES, BATCH_SCALE_LABELS
+  GMP_CERTIFICATIONS, GMP_LABELS, LICENSE_TYPES, LICENSE_LABELS, DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS,
+  THERAPEUTIC_AREAS, BATCH_SCALES, BATCH_SCALE_LABELS, PHARMA_INCOTERMS, MAX_PHARMA_DOC_BYTES
 } from '../config/pharmaTaxonomy';
+
+const MAX_MB = MAX_PHARMA_DOC_BYTES / (1024 * 1024);
 
 const StartRFQPage = () => {
   const navigate = useNavigate();
@@ -27,7 +30,9 @@ const StartRFQPage = () => {
       serviceCategoryOther: '',
       moleculeName: '',
       developmentPhase: 'PHASE_II',
+      developmentPhaseOther: '',
       therapeuticArea: '',
+      therapeuticAreaOther: '',
       targetMarkets: [],
       batchScale: 'NOT_SPECIFIED',
       annualVolume: ''
@@ -42,12 +47,17 @@ const StartRFQPage = () => {
     preferredCurrency: user?.buyerSettings?.preferredCurrency || 'USD',
     rfqDeadline: '',
     targetDeliveryDate: '',
-    shippingTerms: user?.buyerSettings?.defaultIncoterms || 'FOB',
+    shippingTerms: user?.buyerSettings?.defaultIncoterms || '',
     country: user?.country || 'India',
     region: user?.buyerSettings?.defaultRegion || '',
     communicationLanguage: user?.buyerSettings?.communicationLanguage || 'English',
     notes: '',
-    ndaFileUrl: ''
+    ndaFileUrl: '',
+    ndaPreviewUrl: '',
+    ndaFileName: '',
+    projectPdfUrl: '',
+    projectPdfPreviewUrl: '',
+    projectPdfName: ''
   });
 
   const handleChange = (e) => {
@@ -70,32 +80,48 @@ const StartRFQPage = () => {
     });
   };
 
+  const revokePreview = (url) => {
+    if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+  };
+
   const uploadFile = async (file, onDone) => {
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      showError('File must be under 10MB');
+    if (file.size > MAX_PHARMA_DOC_BYTES) {
+      showError(`File must be under ${MAX_MB} MB`);
       return;
     }
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const previewUrl = isPdf ? URL.createObjectURL(file) : '';
     setUploading(true);
     try {
       const fd = new FormData();
       fd.append('file', file);
       fd.append('type', 'document');
       const res = await uploadAPI.uploadSingle(fd);
-      onDone(res.url || res.data?.url, file.name);
+      onDone(res.url || res.data?.url, file.name, previewUrl);
+      showSuccess('File uploaded successfully');
     } catch {
-      showError('Upload failed');
+      revokePreview(previewUrl);
+      showError('Upload failed — check file type (PDF) and try again');
     } finally {
       setUploading(false);
     }
   };
 
   const addDocument = (file) => {
-    uploadFile(file, (url, name) => {
+    uploadFile(file, (url, name, previewUrl) => {
       setFormData((prev) => ({
         ...prev,
-        documents: [...prev.documents, { docType: 'PRODUCT_SPEC', fileUrl: url, fileName: name }]
+        documents: [...prev.documents, { docType: 'PRODUCT_SPEC', fileUrl: url, fileName: name, previewUrl }]
       }));
+    });
+  };
+
+  const removeDocument = (index) => {
+    setFormData((prev) => {
+      const doc = prev.documents[index];
+      revokePreview(doc?.previewUrl);
+      return { ...prev, documents: prev.documents.filter((_, i) => i !== index) };
     });
   };
 
@@ -105,6 +131,9 @@ const StartRFQPage = () => {
     if (activeTab === 'project') {
       if (!formData.title.trim()) return showError('Project title is required');
       if (!formData.pharmaProject.serviceCategory) return showError('Select a service category');
+      if (formData.pharmaProject.serviceCategory === 'OTHER' && !formData.pharmaProject.serviceCategoryOther.trim()) {
+        return showError('Please specify your service category');
+      }
       setActiveTab('regulatory');
       return;
     }
@@ -117,6 +146,10 @@ const StartRFQPage = () => {
 
     if (!formData.rfqDeadline) return showError('RFQ deadline is required');
 
+    const therapeuticArea = formData.pharmaProject.therapeuticArea === 'Other'
+      ? formData.pharmaProject.therapeuticAreaOther.trim()
+      : formData.pharmaProject.therapeuticArea;
+
     setLoading(true);
     try {
       const payload = {
@@ -124,13 +157,19 @@ const StartRFQPage = () => {
         description: formData.description,
         status: 'OPEN_FOR_REQUESTS',
         ndaFile: formData.ndaFileUrl,
+        projectPdf: formData.projectPdfUrl || '',
         isCorporateRFQ: formData.isCorporateRFQ,
         pharmaProject: {
           ...formData.pharmaProject,
+          therapeuticArea,
           serviceCategoryOther: formData.pharmaProject.serviceCategory === 'OTHER'
-            ? formData.pharmaProject.serviceCategoryOther : ''
+            ? formData.pharmaProject.serviceCategoryOther.trim() : '',
+          developmentPhase: formData.pharmaProject.developmentPhase === 'OTHER'
+            && formData.pharmaProject.developmentPhaseOther.trim()
+            ? formData.pharmaProject.developmentPhaseOther.trim()
+            : formData.pharmaProject.developmentPhase
         },
-        documents: formData.documents,
+        documents: formData.documents.map(({ docType, fileUrl, fileName }) => ({ docType, fileUrl, fileName })),
         regulatory: formData.regulatory,
         requirements: {
           preferredCurrency: formData.preferredCurrency,
@@ -185,7 +224,7 @@ const StartRFQPage = () => {
             <div>
               <label className="block text-sm font-semibold mb-1">Project title *</label>
               <input className="w-full border rounded-xl px-4 py-3" value={formData.title}
-                onChange={(e) => handleChange(e)} name="title" placeholder="e.g. Commercial API – Atorvastatin intermediate" />
+                onChange={handleChange} name="title" placeholder="e.g. Commercial API – Atorvastatin intermediate" />
             </div>
             <div>
               <label className="block text-sm font-semibold mb-1">Service category *</label>
@@ -196,12 +235,21 @@ const StartRFQPage = () => {
                   <option key={c} value={c}>{SERVICE_CATEGORY_LABELS[c]}</option>
                 ))}
               </select>
+              {formData.pharmaProject.serviceCategory === 'OTHER' && (
+                <input
+                  className="w-full border rounded-xl px-4 py-3 mt-2"
+                  placeholder="Describe service category"
+                  value={formData.pharmaProject.serviceCategoryOther}
+                  onChange={(e) => handleProjectChange('serviceCategoryOther', e.target.value)}
+                />
+              )}
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-1">Molecule / product name</label>
                 <input className="w-full border rounded-xl px-4 py-3" value={formData.pharmaProject.moleculeName}
-                  onChange={(e) => handleProjectChange('moleculeName', e.target.value)} />
+                  onChange={(e) => handleProjectChange('moleculeName', e.target.value)}
+                  placeholder="e.g. Atorvastatin calcium" />
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-1">Development phase</label>
@@ -211,15 +259,31 @@ const StartRFQPage = () => {
                     <option key={p} value={p}>{DEVELOPMENT_PHASE_LABELS[p]}</option>
                   ))}
                 </select>
+                {formData.pharmaProject.developmentPhase === 'OTHER' && (
+                  <input
+                    className="w-full border rounded-xl px-4 py-3 mt-2"
+                    placeholder="Specify development phase"
+                    value={formData.pharmaProject.developmentPhaseOther}
+                    onChange={(e) => handleProjectChange('developmentPhaseOther', e.target.value)}
+                  />
+                )}
               </div>
             </div>
             <div>
               <label className="block text-sm font-semibold mb-1">Therapeutic area</label>
               <select className="w-full border rounded-xl px-4 py-3" value={formData.pharmaProject.therapeuticArea}
                 onChange={(e) => handleProjectChange('therapeuticArea', e.target.value)}>
-                <option value="">Select</option>
+                <option value="">Select (optional)</option>
                 {THERAPEUTIC_AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
               </select>
+              {formData.pharmaProject.therapeuticArea === 'Other' && (
+                <input
+                  className="w-full border rounded-xl px-4 py-3 mt-2"
+                  placeholder="Specify therapeutic area"
+                  value={formData.pharmaProject.therapeuticAreaOther}
+                  onChange={(e) => handleProjectChange('therapeuticAreaOther', e.target.value)}
+                />
+              )}
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2">Target markets</label>
@@ -253,12 +317,60 @@ const StartRFQPage = () => {
               <textarea className="w-full border rounded-xl px-4 py-3 h-28" value={formData.description}
                 onChange={handleChange} name="description" placeholder="Scope, impurity profile, timeline notes..." />
             </div>
+
+            <div className="border border-dashed border-[#4881F8]/40 rounded-xl p-5 bg-blue-50/30">
+              <label className="block text-sm font-bold text-[#01364a] mb-1">Project PDF (optional)</label>
+              <p className="text-xs text-gray-500 mb-3">Product brief, process summary, or spec sheet — PDF up to {MAX_MB} MB</p>
+              <input
+                type="file"
+                accept=".pdf"
+                disabled={uploading}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  revokePreview(formData.projectPdfPreviewUrl);
+                  uploadFile(file, (url, name, previewUrl) => {
+                    setFormData((p) => ({
+                      ...p,
+                      projectPdfUrl: url,
+                      projectPdfName: name,
+                      projectPdfPreviewUrl: previewUrl
+                    }));
+                  });
+                  e.target.value = '';
+                }}
+              />
+              {formData.projectPdfName && (
+                <p className="text-sm text-green-600 mt-2 font-medium">Uploaded: {formData.projectPdfName}</p>
+              )}
+              {formData.projectPdfPreviewUrl && (
+                <PharmaPdfPreview src={formData.projectPdfPreviewUrl} title={formData.projectPdfName} height="300px" />
+              )}
+            </div>
+
             <div>
-              <label className="block text-sm font-semibold mb-2">Supporting documents (PDF)</label>
-              <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => addDocument(e.target.files?.[0])} />
-              <ul className="mt-2 space-y-1 text-sm text-[#4881F8]">
+              <label className="block text-sm font-semibold mb-2">Supporting documents (PDF, optional)</label>
+              <p className="text-xs text-gray-500 mb-2">Specs, analytical methods, stability protocols — up to {MAX_MB} MB each</p>
+              <input
+                type="file"
+                accept=".pdf"
+                disabled={uploading}
+                onChange={(e) => {
+                  addDocument(e.target.files?.[0]);
+                  e.target.value = '';
+                }}
+              />
+              <ul className="mt-4 space-y-4">
                 {formData.documents.map((d, i) => (
-                  <li key={i}>{d.fileName || d.fileUrl}</li>
+                  <li key={i} className="border border-gray-100 rounded-xl p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-[#01364a]">{d.fileName || d.fileUrl}</span>
+                      <button type="button" className="text-xs text-red-500 font-semibold" onClick={() => removeDocument(i)}>
+                        Remove
+                      </button>
+                    </div>
+                    {d.previewUrl && <PharmaPdfPreview src={d.previewUrl} title={d.fileName} height="220px" />}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -286,7 +398,7 @@ const StartRFQPage = () => {
                   <label key={l} className="flex items-center gap-2 text-sm border rounded-lg px-3 py-2">
                     <input type="checkbox" checked={formData.regulatory.requiredLicenses.includes(l)}
                       onChange={() => toggleArray('regulatory', 'requiredLicenses', l)} />
-                    {l.replace(/_/g, ' ')}
+                    {LICENSE_LABELS[l] || l.replace(/_/g, ' ')}
                   </label>
                 ))}
               </div>
@@ -294,7 +406,8 @@ const StartRFQPage = () => {
             <div>
               <label className="block text-sm font-semibold mb-1">DMF / CEP references</label>
               <input className="w-full border rounded-xl px-4 py-3" value={formData.regulatory.dmfReferences}
-                onChange={(e) => setFormData((p) => ({ ...p, regulatory: { ...p.regulatory, dmfReferences: e.target.value } }))} />
+                onChange={(e) => setFormData((p) => ({ ...p, regulatory: { ...p.regulatory, dmfReferences: e.target.value } }))}
+                placeholder="Optional — DMF numbers, CEP references" />
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={formData.regulatory.stabilityRequired}
@@ -303,10 +416,23 @@ const StartRFQPage = () => {
             </label>
             <div className="border-2 border-dashed border-[#4881F8]/40 rounded-xl p-6 bg-blue-50/50">
               <label className="block text-sm font-bold text-[#01364a] mb-2">NDA / CDA document * (required)</label>
-              <input type="file" accept=".pdf" onChange={(e) => {
-                uploadFile(e.target.files?.[0], (url) => setFormData((p) => ({ ...p, ndaFileUrl: url })));
-              }} />
-              {formData.ndaFileUrl && <p className="text-sm text-green-600 mt-2">NDA uploaded ✓</p>}
+              <p className="text-xs text-gray-500 mb-3">PDF up to {MAX_MB} MB</p>
+              <input
+                type="file"
+                accept=".pdf"
+                disabled={uploading}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  revokePreview(formData.ndaPreviewUrl);
+                  uploadFile(file, (url, name, previewUrl) => {
+                    setFormData((p) => ({ ...p, ndaFileUrl: url, ndaFileName: name, ndaPreviewUrl: previewUrl }));
+                  });
+                  e.target.value = '';
+                }}
+              />
+              {formData.ndaFileName && <p className="text-sm text-green-600 mt-2 font-medium">NDA uploaded: {formData.ndaFileName}</p>}
+              {formData.ndaPreviewUrl && <PharmaPdfPreview src={formData.ndaPreviewUrl} title={formData.ndaFileName} height="280px" />}
             </div>
           </>
         )}
@@ -332,12 +458,19 @@ const StartRFQPage = () => {
                   onChange={handleChange} name="country" />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1">Incoterms</label>
+                <label className="block text-sm font-semibold mb-1">Delivery terms (Incoterms)</label>
                 <select className="w-full border rounded-xl px-4 py-3" value={formData.shippingTerms}
                   onChange={handleChange} name="shippingTerms">
-                  {['FOB', 'CIF', 'EXW', 'DDP', 'DAP', 'FCA'].map((t) => <option key={t} value={t}>{t}</option>)}
+                  {PHARMA_INCOTERMS.map((t) => (
+                    <option key={t.value || 'empty'} value={t.value}>{t.label}</option>
+                  ))}
                 </select>
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">Additional notes</label>
+              <textarea className="w-full border rounded-xl px-4 py-3 h-24" value={formData.notes}
+                onChange={handleChange} name="notes" placeholder="Custom delivery terms, packaging, QP release..." />
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={formData.isCorporateRFQ} onChange={handleChange} name="isCorporateRFQ" />
@@ -355,7 +488,7 @@ const StartRFQPage = () => {
           )}
           <button type="submit" disabled={loading || uploading}
             className="ml-auto px-8 py-3 bg-[#4881F8] text-white rounded-xl font-bold disabled:opacity-50">
-            {loading ? 'Publishing...' : activeTab === 'commercial' ? 'Publish RFQ' : 'Continue'}
+            {loading ? 'Publishing...' : uploading ? 'Uploading...' : activeTab === 'commercial' ? 'Publish RFQ' : 'Continue'}
           </button>
         </div>
       </form>

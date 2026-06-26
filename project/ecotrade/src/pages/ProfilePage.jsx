@@ -16,7 +16,10 @@ import {
   GMP_LABELS,
   THERAPEUTIC_AREAS,
   BATCH_SCALES,
-  BATCH_SCALE_LABELS
+  BATCH_SCALE_LABELS,
+  PHARMA_INCOTERMS,
+  BUYER_COMPANY_TYPES,
+  BUYER_COMPANY_TYPE_LABELS
 } from '../config/pharmaTaxonomy';
 
 const ProfilePage = () => {
@@ -49,7 +52,7 @@ const ProfilePage = () => {
       defaultCountry: '',
       defaultRegion: '',
       preferredCurrency: 'USD',
-      defaultIncoterms: 'FOB',
+      defaultIncoterms: '',
       communicationLanguage: 'English',
       savedShippingAddresses: [],
       billingInfo: {}
@@ -66,7 +69,8 @@ const ProfilePage = () => {
     certifications: [],
     gmpCertifications: [],
     therapeuticAreas: [],
-    batchScaleCapacity: '',
+    buyerCompanyType: '',
+    otherBuyerCompanyType: '',
     otherTechnologyText: '',
     otherCertificationText: '',
     maxDimensions: {
@@ -107,6 +111,8 @@ const ProfilePage = () => {
           gmpCertifications: profile.gmpCertifications || profile.certifications || [],
           therapeuticAreas: profile.therapeuticAreas || [],
           batchScaleCapacity: profile.batchScaleCapacity || '',
+          buyerCompanyType: profile.buyerCompanyType || '',
+          otherBuyerCompanyType: '',
           yearsInBusiness: profile.yearsInBusiness || 0,
           annualSpending: profile.annualSpending || '',
           procurementTeamSize: profile.procurementTeamSize || '',
@@ -115,7 +121,7 @@ const ProfilePage = () => {
             defaultCountry: profile.buyerSettings?.defaultCountry || '',
             defaultRegion: profile.buyerSettings?.defaultRegion || '',
             preferredCurrency: profile.buyerSettings?.preferredCurrency || 'USD',
-            defaultIncoterms: profile.buyerSettings?.defaultIncoterms || 'FOB',
+            defaultIncoterms: profile.buyerSettings?.defaultIncoterms || '',
             communicationLanguage: profile.buyerSettings?.communicationLanguage || 'English',
             savedShippingAddresses: profile.buyerSettings?.savedShippingAddresses || [],
             billingInfo: profile.buyerSettings?.billingInfo || {}
@@ -161,7 +167,7 @@ const ProfilePage = () => {
           defaultCountry: user.buyerSettings?.defaultCountry || '',
           defaultRegion: user.buyerSettings?.defaultRegion || '',
           preferredCurrency: user.buyerSettings?.preferredCurrency || 'USD',
-          defaultIncoterms: user.buyerSettings?.defaultIncoterms || 'FOB',
+          defaultIncoterms: user.buyerSettings?.defaultIncoterms || '',
           communicationLanguage: user.buyerSettings?.communicationLanguage || 'English',
           savedShippingAddresses: user.buyerSettings?.savedShippingAddresses || [],
           billingInfo: user.buyerSettings?.billingInfo || {}
@@ -179,6 +185,8 @@ const ProfilePage = () => {
         gmpCertifications: user.gmpCertifications || user.certifications || [],
         therapeuticAreas: user.therapeuticAreas || [],
         batchScaleCapacity: user.batchScaleCapacity || '',
+        buyerCompanyType: user.buyerCompanyType || '',
+        otherBuyerCompanyType: '',
         otherTechnologyText: '',
         otherCertificationText: '',
         maxDimensions: user.maxDimensions || { height: 0, width: 0, length: 0 }
@@ -269,6 +277,10 @@ const ProfilePage = () => {
       profilePayload.certifications = resolvedGmp;
       delete profilePayload.otherTechnologyText;
       delete profilePayload.otherCertificationText;
+      if (profilePayload.buyerCompanyType === 'OTHER' && profilePayload.otherBuyerCompanyType?.trim()) {
+        profilePayload.buyerCompanyType = profilePayload.otherBuyerCompanyType.trim();
+      }
+      delete profilePayload.otherBuyerCompanyType;
 
       const response = await profileAPI.update(profilePayload);
       if (response.success) {
@@ -329,7 +341,7 @@ const ProfilePage = () => {
   const serviceCategoryOptions = SERVICE_CATEGORIES;
   const certificationOptions = GMP_CERTIFICATIONS;
   const currencyOptions = ['USD', 'EUR', 'GBP', 'INR', 'CNY'];
-  const incotermsOptions = ['FOB', 'CIF', 'EXW', 'DDP', 'DAP', 'FCA'];
+  const incotermsOptions = PHARMA_INCOTERMS;
 
   return (
     <div className="w-full">
@@ -433,7 +445,7 @@ const ProfilePage = () => {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Industry Vertical
+                  Industry / Company Type
                 </label>
                 <input
                   type="text"
@@ -441,7 +453,7 @@ const ProfilePage = () => {
                   value={formData.industryVertical}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
-                  placeholder="e.g., Automotive, Aerospace, Medical"
+                  placeholder="e.g. Innovator biotech, Generic pharma, CRO"
                 />
               </div>
               <div>
@@ -624,7 +636,7 @@ const ProfilePage = () => {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Incoterms
+                  Preferred delivery terms (Incoterms)
                 </label>
                 <select
                   name="buyerSettings.defaultIncoterms"
@@ -632,10 +644,55 @@ const ProfilePage = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
                 >
-                  {incotermsOptions.map(term => (
-                    <option key={term} value={term}>{term}</option>
+                  {incotermsOptions.map((term) => (
+                    <option key={term.value || 'empty'} value={term.value}>{term.label}</option>
                   ))}
                 </select>
+                <p className="text-xs text-gray-500 mt-1">Standard API / CDMO supply chain terms (Incoterms 2020)</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred currency
+                </label>
+                <select
+                  name="buyerSettings.preferredCurrency"
+                  value={formData.buyerSettings.preferredCurrency}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
+                >
+                  {currencyOptions.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Buyer organization type
+                </label>
+                <select
+                  name="buyerCompanyType"
+                  value={formData.buyerCompanyType}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
+                >
+                  <option value="">Select (optional)</option>
+                  {BUYER_COMPANY_TYPES.map((t) => (
+                    <option key={t} value={t}>{BUYER_COMPANY_TYPE_LABELS[t] || t}</option>
+                  ))}
+                </select>
+                {formData.buyerCompanyType === 'OTHER' && (
+                  <input
+                    type="text"
+                    name="otherBuyerCompanyType"
+                    value={formData.otherBuyerCompanyType}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg mt-2 focus:ring-2 focus:ring-[#4881F8] focus:border-transparent"
+                    placeholder="Specify organization type"
+                  />
+                )}
               </div>
             </div>
 

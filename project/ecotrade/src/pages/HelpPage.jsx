@@ -21,7 +21,7 @@ const HelpPage = () => {
       questions: [
         {
           q: 'How do I create my first pharma RFQ?',
-          a: 'Go to "Start Your RFQ" from the dashboard. Complete the project details (molecule, phase, service category), upload your NDA/CDA (required), attach supporting documents (PDF), and submit. Your RFQ will be visible to matching CDMO partners.'
+          a: 'Go to "Create RFQ" from the dashboard. Complete project details (molecule, phase, service category), optionally upload a project PDF and supporting documents (PDF, up to 150 MB each), upload your NDA/CDA (required), and submit. Your RFQ will be visible to matching CDMO partners.'
         },
         {
           q: 'What file formats are supported?',

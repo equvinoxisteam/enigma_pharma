@@ -46,6 +46,7 @@ const rfqSchema = new mongoose.Schema({
   },
 
   ndaFile: { type: String, required: true },
+  projectPdf: { type: String, default: '' },
 
   preferredCurrency: { type: String, default: 'USD' },
   rfqDeadline: { type: Date, required: true },

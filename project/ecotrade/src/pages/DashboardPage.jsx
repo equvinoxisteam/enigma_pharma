@@ -125,8 +125,8 @@ const DashboardPage = () => {
   }[userType] || 'Buyer';
 
   const roleHint = {
-    BUYER: 'Create RFQs, discover suppliers, and track orders.',
-    MANUFACTURER: 'Browse the RFQ pool, submit bids, and manage production.',
+    BUYER: 'Create pharma RFQs, discover CDMO partners, and track projects.',
+    MANUFACTURER: 'Browse the pharma RFQ pool, submit bids, and manage CDMO production.',
     HYBRID: 'Run buyer and seller workflows from one account.'
   }[userType];
 
@@ -142,17 +142,17 @@ const DashboardPage = () => {
   };
 
   const buyerStats = [
-    { label: 'Active RFQs', value: kpis.activeRFQs, hint: 'Open requests', filter: 'active' },
-    { label: 'Awaiting Supplier', value: kpis.awaitingSupplier, hint: 'Pending selection', filter: 'REQUESTS_PENDING' },
-    { label: 'In Production', value: kpis.inProduction, hint: 'Being manufactured', filter: 'IN_PRODUCTION' },
-    { label: 'Awaiting Confirmation', value: kpis.awaitingConfirmation, hint: 'Shipped, confirm delivery', filter: 'SHIPPED' }
+    { label: 'Active Pharma RFQs', value: kpis.activeRFQs, hint: 'Open sourcing projects', filter: 'active' },
+    { label: 'Awaiting CDMO Selection', value: kpis.awaitingSupplier, hint: 'Bids under review', filter: 'REQUESTS_PENDING' },
+    { label: 'In CDMO Production', value: kpis.inProduction, hint: 'Manufacturing in progress', filter: 'IN_PRODUCTION' },
+    { label: 'Awaiting Delivery Confirm', value: kpis.awaitingConfirmation, hint: 'Shipped — confirm receipt', filter: 'SHIPPED' }
   ];
 
   const manufacturerStats = [
-    { label: 'Matching RFQs', value: kpis.matchingRFQs, hint: 'In the pool', filter: 'matching' },
-    { label: 'RFQs Requested', value: kpis.requestedRFQs, hint: 'Awaiting buyer', filter: 'requested' },
-    { label: 'Accepted RFQs', value: kpis.acceptedRFQs, hint: 'Active jobs', filter: 'accepted' },
-    { label: 'In Production', value: kpis.inProductionJobs, hint: 'Current jobs', filter: 'IN_PRODUCTION' }
+    { label: 'Pharma RFQ Matches', value: kpis.matchingRFQs, hint: 'Projects in the pool', filter: 'matching' },
+    { label: 'Bids Submitted', value: kpis.requestedRFQs, hint: 'Awaiting buyer response', filter: 'requested' },
+    { label: 'Accepted Projects', value: kpis.acceptedRFQs, hint: 'Active CDMO engagements', filter: 'accepted' },
+    { label: 'In Production', value: kpis.inProductionJobs, hint: 'Current manufacturing', filter: 'IN_PRODUCTION' }
   ];
 
   return (
@@ -254,7 +254,7 @@ const DashboardPage = () => {
       {isBuyer && recentRequests.length > 0 && (
         <section className="bg-white rounded-2xl border border-gray-200/80 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-[#01364a]">New manufacturer requests</h2>
+            <h2 className="text-lg font-bold text-[#01364a]">New CDMO bids</h2>
             <Link to="/my-rfqs" className="text-sm font-medium text-[#4881F8] hover:underline flex items-center gap-1">
               View all <ArrowRight size={14} />
             </Link>
@@ -317,7 +317,7 @@ const DashboardPage = () => {
             <QuickLink to="/start-rfq" title="Create New RFQ" description="Publish a sourcing request to the pool" />
           )}
           {isManufacturer && (
-            <QuickLink to="/rfqs-pool" title="Browse RFQ Pool" description="Find jobs matching your capabilities" />
+            <QuickLink to="/rfqs-pool" title="Browse Pharma RFQ Pool" description="Find projects matching your CDMO capabilities" />
           )}
           {isManufacturer && (
             <QuickLink to="/analytics" title="View Analytics" description="Track performance and pipeline metrics" />

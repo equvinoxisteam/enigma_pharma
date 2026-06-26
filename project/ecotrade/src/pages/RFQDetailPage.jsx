@@ -116,6 +116,12 @@ const RFQDetailPage = () => {
               Download NDA / CDA
             </a>
           )}
+          {rfq.projectPdf && (
+            <a href={normalizeFileUrl(rfq.projectPdf)} target="_blank" rel="noopener noreferrer"
+              className="inline-block px-4 py-2 ml-2 border border-[#01364a] text-[#01364a] rounded-lg text-sm font-semibold">
+              Download Project PDF
+            </a>
+          )}
         </div>
       </div>
 
